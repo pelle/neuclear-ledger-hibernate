@@ -22,8 +22,12 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-$Id: ThreadLocalSession.java,v 1.1 2004/04/28 00:23:24 pelle Exp $
+$Id: ThreadLocalSession.java,v 1.2 2004/05/13 23:44:04 pelle Exp $
 $Log: ThreadLocalSession.java,v $
+Revision 1.2  2004/05/13 23:44:04  pelle
+Updated the HibernateLedgerController. Got rid of a part of the getBook query that wasn't compatible with hsqldb
+Hopefully improved the ThreadLocalSession. on getSession() it now tests if the connection is still open. If not it creates a new one.
+
 Revision 1.1  2004/04/28 00:23:24  pelle
 Fixed the strange verification error
 Added bunch of new unit tests to support this.
@@ -43,8 +47,13 @@ public class ThreadLocalSession extends ThreadLocal {
         this.factory = factory;
     }
 
-    public final Session getSession() {
-        return (Session) get();
+    public final Session getSession() throws HibernateException {
+        final Session session = (Session) get();
+        if (session.isOpen() && session.isConnected())
+            return session;
+        session.close();
+        this.set(initialValue());
+        return getSession();
     }
 
     /**

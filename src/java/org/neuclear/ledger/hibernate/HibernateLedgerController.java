@@ -417,14 +417,14 @@ public final class HibernateLedgerController extends LedgerController implements
             Session ses = locSes.getSession();
             Query q = ses.createQuery("from HBook book " +
                     "where(length(?)=32 and book.id=?) or " +
-                    "(length(?)<>32 and book.nickname=?) or " +
-                    "(substring(book.id,0,length(?))=?)");
+                    "(length(?)<>32 and book.nickname=?)");
+//                   + " or (substring(book.id,0,length(?))=?)");
             q.setString(0, id);
             q.setString(1, id);
             q.setString(2, id);
             q.setString(3, id);
-            q.setString(4, id);
-            q.setString(5, id);
+//            q.setString(4, id);
+//            q.setString(5, id);
             Iterator iter = q.iterate();
             if (iter.hasNext()) {
                 HBook book = (HBook) iter.next();

@@ -32,6 +32,14 @@ public class HTransaction {
         }
     }
 
+    public HTransaction(HHeld held, Date transactionTime) {
+        this.id = held.getId();
+        this.requestId = held.getRequestId();
+        this.transactionTime = transactionTime;
+        this.comment = held.getComment();
+        this.items = held.getItems();
+    }
+
     public String getId() {
         return id;
     }

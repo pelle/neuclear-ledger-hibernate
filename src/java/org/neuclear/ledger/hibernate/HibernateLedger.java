@@ -37,10 +37,10 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
         try {
             Configuration cfg = new Configuration()
                     .addClass(HTransaction.class)
-                    .addClass(HTransactionItem.class);
-//                    .addClass(HHeld.class)
-//                    .addClass(HHeldItem.class);
-//            new net.sf.hibernate.tool.hbm2ddl.SchemaExport(cfg).create(create,create);
+                    .addClass(HTransactionItem.class)
+                    .addClass(HHeld.class)
+                    .addClass(HHeldItem.class);
+            new net.sf.hibernate.tool.hbm2ddl.SchemaExport(cfg).create(create, create);
             factory = cfg.buildSessionFactory();
         } catch (HibernateException e) {
             throw new LowlevelLedgerException(e);
@@ -59,11 +59,11 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
             throw new UnBalancedTransactionException(this, trans);
         try {
             Session ses = factory.openSession();
-//            net.sf.hibernate.Transaction t = ses.beginTransaction();
+            net.sf.hibernate.Transaction t = ses.beginTransaction();
             HTransaction posted = new HTransaction(trans, new Date());
             ses.save(posted);
-            ses.flush();
-//            t.commit();
+//            ses.flush();
+            t.commit();
             ses.close();
             return posted.createPosted();
         } catch (HibernateException e) {
@@ -83,8 +83,16 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
         try {
             Session ses = factory.openSession();
             net.sf.hibernate.Transaction t = ses.beginTransaction();
+            Iterator iter = trans.getItems();
+            // First lets check the balances
+            while (iter.hasNext()) {
+                TransactionItem item = (TransactionItem) iter.next();
+                if (item.getAmount() < 0 && getAvailableBalance(item.getBook()) + item.getAmount() < 0)
+                    throw new InsufficientFundsException(null, item.getBook(), item.getAmount());
+            }
+
             HTransaction posted = new HTransaction(trans, new Date());
-            ses.saveOrUpdate(posted);
+            ses.save(posted);
             t.commit();
             ses.close();
             return posted.createPosted();
@@ -105,11 +113,11 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
             throw new UnBalancedTransactionException(this, trans);
         try {
             Session ses = factory.openSession();
-//            net.sf.hibernate.Transaction t = ses.beginTransaction();
+            net.sf.hibernate.Transaction t = ses.beginTransaction();
             HHeld posted = new HHeld(trans, new Date());
-            ses.saveOrUpdate(posted);
-//            t.commit();
-            ses.flush();
+            ses.save(posted);
+            t.commit();
+//            ses.flush();
             ses.close();
             return posted.createPosted();
         } catch (HibernateException e) {
@@ -127,6 +135,17 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
      *
      */
     public void performCancelHold(PostedHeldTransaction hold) throws LowlevelLedgerException, UnknownTransactionException {
+        try {
+            Session ses = factory.openSession();
+            net.sf.hibernate.Transaction t = ses.beginTransaction();
+            HHeld posted = (HHeld) ses.get(HHeld.class, hold.getId());
+            if (posted != null)
+                ses.delete(posted);
+            t.commit();
+            ses.close();
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        }
 
     }
 
@@ -146,7 +165,28 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
      *
      */
     public PostedTransaction performCompleteHold(PostedHeldTransaction hold, double amount, String comment) throws InvalidTransactionException, LowlevelLedgerException, TransactionExpiredException, UnknownTransactionException {
-        return null;
+        try {
+            Session ses = factory.openSession();
+            net.sf.hibernate.Transaction t = ses.beginTransaction();
+            HHeld posted = (HHeld) ses.get(HHeld.class, hold.getId());
+            final Date time = new Date();
+            if (posted.getExpiryTime().before(time)) {
+                ses.delete(posted);
+                t.commit();
+                ses.close();
+                throw new TransactionExpiredException(this, hold);
+            }
+            HTransaction htran = new HTransaction(posted, time);
+            htran.setComment(comment);
+            ses.save(htran);
+            if (posted != null)
+                ses.delete(posted);
+            t.commit();
+            ses.close();
+            return htran.createPosted();
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(this, e);
+        }
     }
 
     /**
@@ -156,7 +196,24 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
      * @return The Transaction object
      */
     public Date getTransactionTime(String id) throws LowlevelLedgerException, UnknownTransactionException, InvalidTransactionException, UnknownBookException {
-        return null;
+        try {
+            Session ses = factory.openSession();
+            Query q = ses.createQuery("select transactionTime from HTransaction item where item.id = ?");
+            q.setString(0, id);
+            Iterator iter = q.iterate();
+            if (iter.hasNext()) {
+                final Object o = iter.next();
+                if (o != null) {
+                    ses.close();
+                    return ((Timestamp) o);
+                }
+            }
+            ses.close();
+            throw new UnknownTransactionException(this, id);
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        }
+
     }
 
     /**
@@ -182,17 +239,41 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
 
     public double getBalance(String book) throws LowlevelLedgerException {
         try {
-            Session sess = factory.openSession();
-            Query q = sess.createQuery("select sum(item.amount) from HTransactionItem item where item.book = ?");
+            Session ses = factory.openSession();
+            Query q = ses.createQuery("select sum(item.amount) from HTransactionItem item where item.book = ?");
             q.setString(0, book);
-            Iterator cats = q.iterate();
-            if (cats.hasNext()) {
-                final Object o = cats.next();
-                if (o != null)
+            Iterator iter = q.iterate();
+            if (iter.hasNext()) {
+                final Object o = iter.next();
+                if (o != null) {
+                    ses.close();
                     return ((Double) o).doubleValue();
+                }
 //                throw new LowlevelLedgerException(this,"Query returned more or less than one column");
             }
 //            throw new LowlevelLedgerException(this,"Query didnt return a row");
+            ses.close();
+            return 0;
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        }
+    }
+
+    private double getHeldBalance(String book) throws LowlevelLedgerException {
+        try {
+            Session ses = factory.openSession();
+            Query q = ses.createQuery("select sum(item.amount) from HHeldItem item where item.book = ? and item.amount<0 and item.held.expiryTime < ?");
+            q.setString(0, book);
+            q.setTimestamp(1, new Date());
+            Iterator iter = q.iterate();
+            if (iter.hasNext()) {
+                final Object o = iter.next();
+                if (o != null) {
+                    ses.close();
+                    return ((Double) o).doubleValue();
+                }
+            }
+            ses.close();
             return 0;
         } catch (HibernateException e) {
             throw new LowlevelLedgerException(e);
@@ -220,7 +301,7 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
      */
 
     public double getAvailableBalance(String book) throws LowlevelLedgerException {
-        return 0;
+        return getHeldBalance(book) + getBalance(book);
     }
 
     /**
@@ -230,7 +311,20 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
      * @return The Transaction object
      */
     public PostedHeldTransaction findHeldTransaction(String idstring) throws LowlevelLedgerException, UnknownTransactionException {
-        return null;
+        try {
+            Session ses = factory.openSession();
+            HHeld held = (HHeld) ses.get(HHeld.class, idstring);
+            if (held == null) {
+                ses.close();
+                return held.createPosted();
+            }
+            ses.close();
+            throw new UnknownTransactionException(this, idstring);
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        } catch (InvalidTransactionException e) {
+            throw new LowlevelLedgerException(e);
+        }
     }
 
     public void close() throws LowlevelLedgerException {

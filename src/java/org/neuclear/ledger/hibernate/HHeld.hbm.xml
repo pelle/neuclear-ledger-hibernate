@@ -17,19 +17,19 @@
             <column name="reqid" sql-type="char(32)"
                 not-null="true"/>
         </property>
-        <property name="transactionTime">
-            <column name="transactiontime" sql-type="double"
+        <property name="transactionTime" type="timestamp">
+            <column name="transactiontime"
                 not-null="true"/>
         </property>
-        <property name="expiryTime">
-            <column name="expirytime" sql-type="double"
+        <property name="expiryTime" type="timestamp">
+            <column name="expirytime"
                 not-null="true"/>
         </property>
         <property name="comment">
             <column name="comment" sql-type="varchar(256)"
                 not-null="true"/>
         </property>
-        <set name="items" table="held_items" inverse="true" cascade="all">
+        <set name="items" table="held_items" cascade="all">
             <key column="held_id"/>
             <one-to-many class="org.neuclear.ledger.hibernate.HHeldItem"/>
         </set>

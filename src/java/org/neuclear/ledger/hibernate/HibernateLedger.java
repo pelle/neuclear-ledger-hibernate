@@ -27,11 +27,11 @@ import java.util.Iterator;
  */
 public final class HibernateLedger extends Ledger implements LedgerBrowser {
 
-    public HibernateLedger(final String id) throws UnknownLedgerException, LowlevelLedgerException {
+    public HibernateLedger(final String id) throws LowlevelLedgerException {
         this(id, false);
     }
 
-    public HibernateLedger(final String id, final boolean create) throws LowlevelLedgerException, UnknownLedgerException {
+    public HibernateLedger(final String id, final boolean create) throws LowlevelLedgerException {
         super(id);
 
         try {
@@ -368,7 +368,16 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
     }
 
     public BookBrowser browse(String book) throws LowlevelLedgerException {
-        return null;
+        try {
+            Session ses = factory.openSession();
+            Query q = ses.createQuery("from HTransactionItem item where item.book=?");
+            q.setString(0, book);
+            Iterator iter = q.iterate();
+            return new HibernateBookBrowser(iter, book);
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        }
+
     }
 
     public BookBrowser browseFrom(String book, Timestamp from) throws LowlevelLedgerException {

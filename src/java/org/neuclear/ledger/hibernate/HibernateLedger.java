@@ -30,8 +30,11 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
 
         try {
             Configuration cfg = new Configuration()
-                    .addClass(PostedTransaction.class)
-                    .addClass(PostedHeldTransaction.class);
+                    .addClass(HTransaction.class)
+                    .addClass(HTransactionItem.class)
+                    .addClass(HHeld.class)
+                    .addClass(HHeldItem.class);
+//            new net.sf.hibernate.tool.hbm2ddl.SchemaExport(cfg).create(true, true);
             factory = cfg.buildSessionFactory();
         } catch (HibernateException e) {
             throw new LowlevelLedgerException(e);
@@ -51,11 +54,11 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
         try {
             Session ses = factory.openSession();
             net.sf.hibernate.Transaction t = ses.beginTransaction();
-            PostedTransaction posted = new PostedTransaction(trans, new Date());
+            HTransaction posted = new HTransaction(trans, new Date());
             ses.saveOrUpdate(posted);
             t.commit();
             ses.close();
-            return posted;
+            return posted.createPosted();
         } catch (HibernateException e) {
             throw new LowlevelLedgerException(e);
         }
@@ -68,7 +71,19 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
      * @return The reference to the transaction
      */
     public PostedTransaction performVerifiedTransfer(UnPostedTransaction trans) throws UnBalancedTransactionException, LowlevelLedgerException, InvalidTransactionException {
-        return null;
+        if (!trans.isBalanced())
+            throw new UnBalancedTransactionException(this, trans);
+        try {
+            Session ses = factory.openSession();
+            net.sf.hibernate.Transaction t = ses.beginTransaction();
+            HTransaction posted = new HTransaction(trans, new Date());
+            ses.saveOrUpdate(posted);
+            t.commit();
+            ses.close();
+            return posted.createPosted();
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        }
     }
 
     /**
@@ -79,7 +94,19 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
      * @param trans Transaction to perform
      */
     public PostedHeldTransaction performHeldTransfer(UnPostedHeldTransaction trans) throws UnBalancedTransactionException, LowlevelLedgerException, InvalidTransactionException {
-        return null;
+        if (!trans.isBalanced())
+            throw new UnBalancedTransactionException(this, trans);
+        try {
+            Session ses = factory.openSession();
+            net.sf.hibernate.Transaction t = ses.beginTransaction();
+            HHeld posted = new HHeld(trans, new Date());
+            ses.saveOrUpdate(posted);
+            t.commit();
+            ses.close();
+            return posted.createPosted();
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        }
     }
 
     /**
@@ -183,8 +210,12 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
         return null;
     }
 
-    public void close() {
-
+    public void close() throws LowlevelLedgerException {
+        try {
+            factory.close();
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        }
     }
 
     public BookBrowser browse(String book) throws LowlevelLedgerException {

@@ -97,6 +97,10 @@
             </properties>
         </dependency>
         <dependency>
+            <id>commons-collections</id>
+            <version>2.1</version>
+        </dependency>
+        <dependency>
             <id>carol</id>
             <version>1.5.2</version>
             <properties>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping
+    PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN"
+    "http://hibernate.sourceforge.net/hibernate-mapping-2.0.dtd">
+
+<hibernate-mapping>
+    <class name="org.neuclear.ledger.hibernate.HHeld"
+        table="heldtransactions">
+
+        <id name="id" type="string"
+            unsaved-value="null">
+            <column name="id" sql-type="char(32)"
+                not-null="true"/>
+            <generator class="assigned"/>
+        </id>
+        <property name="requestId">
+            <column name="reqid" sql-type="char(32)"
+                not-null="true"/>
+        </property>
+        <property name="transactionTime">
+            <column name="transactiontime" sql-type="double"
+                not-null="true"/>
+        </property>
+        <property name="expiryTime">
+            <column name="expirytime" sql-type="double"
+                not-null="true"/>
+        </property>
+        <property name="comment">
+            <column name="comment" sql-type="varchar(256)"
+                not-null="true"/>
+        </property>
+        <set name="items" table="held_items" inverse="true" cascade="all">
+            <key column="held_id"/>
+            <one-to-many class="org.neuclear.ledger.hibernate.HHeldItem"/>
+        </set>
+
+    </class>
+</hibernate-mapping>

@@ -14,6 +14,7 @@ import org.neuclear.ledger.*;
 import org.neuclear.ledger.browser.BookBrowser;
 import org.neuclear.ledger.browser.BookListBrowser;
 import org.neuclear.ledger.browser.LedgerBrowser;
+import org.neuclear.ledger.browser.PortfolioBrowser;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -597,6 +598,18 @@ public final class HibernateLedgerController extends LedgerController implements
             q.setString(0, ledger);
             Iterator iter = q.iterate();
             return new HibernateBookListBrowser(iter, ledger);
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        }
+    }
+
+    public PortfolioBrowser browsePortfolio(Book book) throws LowlevelLedgerException {
+        try {
+            Session ses = locSes.getSession();
+            Query q = ses.createQuery("select item.transaction.ledger,count(item.id),sum(item.amount) from HTransactionItem item where item.book.id=? group by item.transaction.ledger");
+            q.setString(0, book.getId());
+            Iterator iter = q.iterate();
+            return new HibernatePortfolioBrowser(iter, book);
         } catch (HibernateException e) {
             throw new LowlevelLedgerException(e);
         }

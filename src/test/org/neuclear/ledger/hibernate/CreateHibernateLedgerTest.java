@@ -15,7 +15,7 @@ public class CreateHibernateLedgerTest extends TestCase {
         super(name);
     }
 
-    public void testCreateLedger() throws UnknownLedgerException, LowlevelLedgerException, UnBalancedTransactionException, InvalidTransactionException {
+    public void testCreateLedger() throws UnknownLedgerException, LowlevelLedgerException, UnBalancedTransactionException, InvalidTransactionException, UnknownBookException {
         Ledger ledger = new HibernateLedger("test", true);
         assertNotNull(ledger);
 

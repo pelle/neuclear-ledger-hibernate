@@ -432,18 +432,35 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
         }
     }
 
-    public Book getBook(String id) throws LowlevelLedgerException {
+    public Book getBook(String id) throws LowlevelLedgerException, UnknownBookException {
         try {
+            id = id.toLowerCase();
             Session ses = factory.openSession();
-            HBook book = (HBook) ses.get(HBook.class, id);
-            if (book == null) {
+            Query q = ses.createQuery("from HBook book " +
+                    "where(length(?)=32 and book.id=?) or " +
+                    "(length(?)<>32 and book.nickname=?) or " +
+                    "(substring(book.id,0,length(?))=?)");
+            q.setString(0, id);
+            q.setString(1, id);
+            q.setString(2, id);
+            q.setString(3, id);
+            q.setString(4, id);
+            q.setString(5, id);
+            Iterator iter = q.iterate();
+            if (iter.hasNext()) {
+                HBook book = (HBook) iter.next();
+                ses.close();
+                if (iter.hasNext()) //oops we've got more than one
+                    throw new UnknownBookException(this, id);
+                return book;
+            } else if (id.length() == 32) {
                 net.sf.hibernate.Transaction t = ses.beginTransaction();
-                book = new HBook(id, new Date());
+                HBook book = new HBook(id, new Date());
                 ses.save(book);
                 t.commit();
+                return book;
             }
-            ses.close();
-            return book;
+            throw new UnknownBookException(this, id);
         } catch (HibernateException e) {
             throw new LowlevelLedgerException(e);
         }

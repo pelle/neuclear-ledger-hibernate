@@ -30,6 +30,10 @@ public final class HibernateLedgerController extends LedgerController implements
         this(id, false);
     }
 
+    public boolean existsLedger(String id) {
+        return false;
+    }
+
     public HibernateLedgerController(final String id, final boolean create) throws LowlevelLedgerException {
         super(id);
 
@@ -85,7 +89,7 @@ public final class HibernateLedgerController extends LedgerController implements
             // First lets check the balances
             while (iter.hasNext()) {
                 TransactionItem item = (TransactionItem) iter.next();
-                if (item.getAmount() < 0 && getAvailableBalance(item.getBook().getId()) + item.getAmount() < 0)
+                if (item.getAmount() < 0 && getAvailableBalance(null, item.getBook().getId()) + item.getAmount() < 0)
                     throw new InsufficientFundsException(null, item.getBook().getId(), item.getAmount());
             }
 
@@ -115,7 +119,7 @@ public final class HibernateLedgerController extends LedgerController implements
             // First lets check the balances
             while (iter.hasNext()) {
                 TransactionItem item = (TransactionItem) iter.next();
-                if (item.getAmount() < 0 && getAvailableBalance(item.getBook().getId()) + item.getAmount() < 0)
+                if (item.getAmount() < 0 && getAvailableBalance(null, item.getBook().getId()) + item.getAmount() < 0)
                     throw new InsufficientFundsException(null, item.getBook().getId(), item.getAmount());
             }
 
@@ -245,7 +249,7 @@ public final class HibernateLedgerController extends LedgerController implements
      * @return the balance as a double
      */
 
-    public double getBalance(String book) throws LowlevelLedgerException {
+    public double getBalance(String ledger, String book) throws LowlevelLedgerException {
         try {
             Session ses = locSes.getSession();
             Query q = ses.createQuery("select sum(item.amount) from HTransactionItem item where item.book.id = ? and item.transaction.receipt is not null");
@@ -302,11 +306,11 @@ public final class HibernateLedgerController extends LedgerController implements
      * @return the balance as a double
      */
 
-    public double getAvailableBalance(String book) throws LowlevelLedgerException {
-        return getHeldBalance(book) + getBalance(book);
+    public double getAvailableBalance(String ledger, String book) throws LowlevelLedgerException {
+        return getHeldBalance(book) + getBalance(null, book);
     }
 
-    public long getBookCount() throws LowlevelLedgerException {
+    public long getBookCount(String ledger) throws LowlevelLedgerException {
         try {
             Session ses = locSes.getSession();
             Query q = ses.createQuery("select count(books) from HBook books");
@@ -323,7 +327,7 @@ public final class HibernateLedgerController extends LedgerController implements
         }
     }
 
-    public long getTransactionCount() throws LowlevelLedgerException {
+    public long getTransactionCount(String ledger) throws LowlevelLedgerException {
         try {
             Session ses = locSes.getSession();
             Query q = ses.createQuery("select count(transactions) from HTransaction transactions");
@@ -493,7 +497,7 @@ public final class HibernateLedgerController extends LedgerController implements
 
     }
 
-    public double getTestBalance() throws LowlevelLedgerException {
+    public double getTestBalance(String ledger) throws LowlevelLedgerException {
         try {
             Session ses = locSes.getSession();
             Query q = ses.createQuery("select sum(item.amount) from HTransactionItem item");

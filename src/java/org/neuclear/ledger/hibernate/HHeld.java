@@ -99,7 +99,7 @@ public class HHeld {
     }
 
     public PostedHeldTransaction createPosted() throws InvalidTransactionException {
-        UnPostedHeldTransaction unp = new UnPostedHeldTransaction(id, comment, expiryTime);
+        UnPostedHeldTransaction unp = new UnPostedHeldTransaction(null, id, comment, expiryTime);
         Iterator iter = items.iterator();
         while (iter.hasNext()) {
             HHeldItem item = (HHeldItem) iter.next();

@@ -19,12 +19,12 @@ public class CreateHibernateLedgerTest extends TestCase {
         LedgerController ledger = new HibernateLedgerController("test", true);
         assertNotNull(ledger);
 
-        double pre = ledger.getBalance("bob");
+        double pre = ledger.getBalance(null, "bob");
 
         PostedTransaction tran = ledger.transfer("bob", "alice", 85, "hello");
         assertNotNull(tran);
 
-        assertEquals(pre - 85, ledger.getBalance("bob"), 0);
+        assertEquals(pre - 85, ledger.getBalance(null, "bob"), 0);
 //        ledger.close();
     }
 }

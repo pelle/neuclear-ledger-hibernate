@@ -23,8 +23,11 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-$Id: HibernateBookBrowser.java,v 1.5 2004/04/21 23:25:57 pelle Exp $
+$Id: HibernateBookBrowser.java,v 1.6 2004/04/22 18:30:55 pelle Exp $
 $Log: HibernateBookBrowser.java,v $
+Revision 1.6  2004/04/22 18:30:55  pelle
+Fixed a problem with the display of counterparty information.
+
 Revision 1.5  2004/04/21 23:25:57  pelle
 Integrated Browser with the asset controller
 Updated look and feel
@@ -71,15 +74,19 @@ public class HibernateBookBrowser extends BookBrowser {
         final HTransaction tran = item.getTransaction();
         HBook counterparty = null;
         Iterator iter = tran.getItems().iterator();
+        HBook last = null;
 
         int count = tran.getItems().size();
         while (iter.hasNext()) {
             count--;
             HTransactionItem party = (HTransactionItem) iter.next();
-            if (!party.getBook().equals(item.getBook()) || count == 0) {
+            if (!party.getBook().equals(item.getBook())) {
                 counterparty = party.getBook();
             }
+            last = party.getBook();
         }
+        if (counterparty == null)//We did a transfer to ourselves
+            counterparty = last;
         setRow(tran.getId(), counterparty, tran.getComment(), tran.getTransactionTime(), item.getAmount(), null, null, null);
         return true;
     }

@@ -45,7 +45,8 @@ public final class HibernateLedgerController extends LedgerController implements
                     .addClass(HTransaction.class)
                     .addClass(HTransactionItem.class)
                     .addClass(HHeld.class)
-                    .addClass(HHeldItem.class);
+                    .addClass(HHeldItem.class)
+                    .addClass(HLedger.class);
             new net.sf.hibernate.tool.hbm2ddl.SchemaExport(cfg).create(create, create);
             locSes = new ThreadLocalSession(cfg.buildSessionFactory());
         } catch (HibernateException e) {
@@ -438,6 +439,59 @@ public final class HibernateLedgerController extends LedgerController implements
                 ses.save(book);
                 t.commit();
                 return book;
+            }
+//            throw new UnknownBookException(this, id);
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        }
+    }
+
+    public Ledger registerLedger(String id, String nickname, String type, String source, String registrationid, String unit, int decimal) throws LowlevelLedgerException {
+        try {
+            Session ses = locSes.getSession();
+            net.sf.hibernate.Transaction t = ses.beginTransaction();
+            HLedger ledger = (HLedger) ses.get(HLedger.class, id);
+            final Date time = new Date();
+            if (ledger == null) {
+                ledger = new HLedger(id, nickname, type, source, time, time, registrationid, unit, decimal);
+                ses.save(ledger);
+            } else {
+                ledger.setNickname(nickname);
+                ledger.setRegistrationId(registrationid);
+                ledger.setUpdated(time);
+                ledger.setType(type);
+                ledger.setSource(source);
+                ledger.setUnit(unit);
+                ledger.setDecimalPoint(decimal);
+            }
+            t.commit();
+            return ledger;
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        }
+    }
+
+    public Ledger getLedger(String id) throws LowlevelLedgerException, UnknownLedgerException {
+        try {
+            id = id.toLowerCase();
+            Session ses = locSes.getSession();
+            Query q = ses.createQuery("from HLedger ledger " +
+                    "where(ledger.id=? or " +
+                    "ledger.source=?)");
+            q.setString(0, id);
+            q.setString(1, id);
+            Iterator iter = q.iterate();
+            if (iter.hasNext()) {
+                HLedger ledger = (HLedger) iter.next();
+                if (iter.hasNext()) //oops we've got more than one
+                    throw new UnknownLedgerException(id);
+                return ledger;
+            } else/* if (id.length() == 32)*/ {
+                net.sf.hibernate.Transaction t = ses.beginTransaction();
+                HLedger ledger = new HLedger(id, new Date());
+                ses.save(ledger);
+                t.commit();
+                return ledger;
             }
 //            throw new UnknownBookException(this, id);
         } catch (HibernateException e) {

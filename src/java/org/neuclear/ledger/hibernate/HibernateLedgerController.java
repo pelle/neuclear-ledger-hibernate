@@ -12,6 +12,7 @@ import net.sf.hibernate.Session;
 import net.sf.hibernate.cfg.Configuration;
 import org.neuclear.ledger.*;
 import org.neuclear.ledger.browser.BookBrowser;
+import org.neuclear.ledger.browser.BookListBrowser;
 import org.neuclear.ledger.browser.LedgerBrowser;
 
 import java.sql.Timestamp;
@@ -584,6 +585,24 @@ public final class HibernateLedgerController extends LedgerController implements
 
     public BookBrowser browseRange(String book, Date from, Date until) throws LowlevelLedgerException {
         return browseFrom(getId(), book, until);
+    }
+
+    public BookListBrowser browseBooks(String ledger) throws LowlevelLedgerException {
+        try {
+            Session ses = locSes.getSession();
+            Query q = ses.createQuery("select item.book.id,item.book.nickname,item.book.source,sum(item.amount),count(item.id) from HTransactionItem item where item.transaction.ledger=? group by item.book");
+            q.setString(0, book);
+            q.setTimestamp(1, from);
+            q.setTimestamp(2, until);
+            q.setString(3, ledger);
+            System.out.println("from: " + from);
+            System.out.println("until: " + until);
+            System.out.println("range of " + (until.getTime() - from.getTime()));
+            Iterator iter = q.iterate();
+            return new HibernateBookBrowser(iter, book);
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        }
     }
 
     private final ThreadLocalSession locSes;

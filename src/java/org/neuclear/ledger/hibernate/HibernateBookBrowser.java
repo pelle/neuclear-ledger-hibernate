@@ -23,8 +23,11 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-$Id: HibernateBookBrowser.java,v 1.1 2004/03/25 22:05:20 pelle Exp $
+$Id: HibernateBookBrowser.java,v 1.2 2004/03/26 23:36:50 pelle Exp $
 $Log: HibernateBookBrowser.java,v $
+Revision 1.2  2004/03/26 23:36:50  pelle
+The simple browse(book) now works on hibernate, I have implemented the other two, which currently don not constrain the query correctly.
+
 Revision 1.1  2004/03/25 22:05:20  pelle
 First shell of the HibernateBookBrowser
 
@@ -42,7 +45,20 @@ public class HibernateBookBrowser extends BookBrowser {
     }
 
     public boolean next() throws LowlevelLedgerException {
-        return false;
+        if (!iter.hasNext())
+            return false;
+        HTransactionItem item = (HTransactionItem) iter.next();
+        final HTransaction tran = item.getTransaction();
+        String counterparty = null;
+        Iterator iter = tran.getItems().iterator();
+        while (iter.hasNext()) {
+            HTransactionItem party = (HTransactionItem) iter.next();
+            if (!party.getBook().equals(item.getBook())) {
+                counterparty = party.getBook();
+            }
+        }
+        setRow(tran.getId(), tran.getRequestId(), counterparty, tran.getComment(), tran.getTransactionTime(), item.getAmount(), null, null, null);
+        return true;
     }
 
     private final Iterator iter;

@@ -380,12 +380,33 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
 
     }
 
-    public BookBrowser browseFrom(String book, Timestamp from) throws LowlevelLedgerException {
-        return null;
+    public BookBrowser browseFrom(String book, Date from) throws LowlevelLedgerException {
+        try {
+            Session ses = factory.openSession();
+            Query q = ses.createQuery("from HTransactionItem item where item.book=? and item.transaction.transactionTime>=?");
+            q.setString(0, book);
+            q.setDate(1, from);
+            Iterator iter = q.iterate();
+            return new HibernateBookBrowser(iter, book);
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        }
+
     }
 
-    public BookBrowser browseRange(String book, Timestamp from, Timestamp until) throws LowlevelLedgerException {
-        return null;
+    public BookBrowser browseRange(String book, Date from, Date until) throws LowlevelLedgerException {
+        try {
+            Session ses = factory.openSession();
+            Query q = ses.createQuery("from HTransactionItem item where item.book=? and item.transaction.transactionTime>=? and item.transaction.transactionTime<?");
+            q.setString(0, book);
+            q.setDate(1, from);
+            q.setDate(1, until);
+            Iterator iter = q.iterate();
+            return new HibernateBookBrowser(iter, book);
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        }
+
     }
 
     private final SessionFactory factory;

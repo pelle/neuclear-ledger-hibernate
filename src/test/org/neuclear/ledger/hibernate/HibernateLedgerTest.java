@@ -13,12 +13,12 @@ import org.neuclear.ledger.tests.AbstractLedgerTest;
  * To change this template use Options | File Templates.
  */
 public final class HibernateLedgerTest extends AbstractLedgerTest {
-    public HibernateLedgerTest(final String s)  {
+    public HibernateLedgerTest(final String s) {
         super(s);
     }
 
     public final Ledger createLedger() throws UnknownLedgerException, LowlevelLedgerException {
-        return new HibernateLedger("test");
+        return new HibernateLedger("test", true);
     }
 
 

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping
+    PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN"
+    "http://hibernate.sourceforge.net/hibernate-mapping-2.0.dtd">
+
+<hibernate-mapping>
+    <class name="org.neuclear.ledger.hibernate.HBook"
+        table="books">
+
+        <id name="id" type="string"
+            unsaved-value="null">
+            <column name="id" sql-type="char(32)"
+                not-null="true"/>
+            <generator class="assigned"/>
+        </id>
+        <property name="nickname" type="string">
+            <column name="nickname" sql-type="char(32)"/>
+        </property>
+        <property name="type" type="string">
+            <column name="type" sql-type="char(32)"/>
+        </property>
+
+        <property name="source" type="string">
+            <column name="source" sql-type="char(32)"/>
+        </property>
+        <property name="registrationId" type="string">
+            <column name="regid" sql-type="char(32)"/>
+        </property>
+        <property name="registered" type="timestamp">
+            <column name="registered"
+                not-null="true"/>
+        </property>
+
+        <property name="updated" type="timestamp">
+            <column name="updated"
+                not-null="true"/>
+        </property>
+        <set name="items" table="transaction_items" cascade="all">
+            <key column="book"/>
+            <one-to-many class="org.neuclear.ledger.hibernate.HTransactionItem"/>
+        </set>
+
+    </class>
+</hibernate-mapping>

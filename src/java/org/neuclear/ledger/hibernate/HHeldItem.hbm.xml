@@ -17,10 +17,12 @@
         <!--            <column name="held_id" sql-type="char(32)"-->
         <!--                    not-null="true"/>-->
         <!--        </property>-->
-        <property name="book">
-            <column name="book" sql-type="char(32)"
-                not-null="true"/>
-        </property>
+        <many-to-one name="book"
+            class="org.neuclear.ledger.hibernate.HBook"
+            column="book"
+            update="false"
+            insert="false"
+            />
         <property name="amount">
             <column name="amount" sql-type="double"
                 not-null="true"/>

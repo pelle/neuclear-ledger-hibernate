@@ -30,7 +30,7 @@ public class HHeld {
         this.items = new HashSet(ol.size());
         for (int i = 0; i < ol.size(); i++) {
             TransactionItem item = (TransactionItem) ol.get(i);
-            items.add(new HHeldItem(this, item.getBook(), item.getAmount()));
+            items.add(new HHeldItem(this, (HBook) item.getBook(), item.getAmount()));
         }
     }
 

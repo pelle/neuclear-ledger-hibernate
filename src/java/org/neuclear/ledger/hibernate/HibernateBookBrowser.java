@@ -23,8 +23,15 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-$Id: HibernateBookBrowser.java,v 1.3 2004/03/31 23:11:30 pelle Exp $
+$Id: HibernateBookBrowser.java,v 1.4 2004/04/19 18:57:38 pelle Exp $
 $Log: HibernateBookBrowser.java,v $
+Revision 1.4  2004/04/19 18:57:38  pelle
+Updated Ledger to support more advanced book information.
+You can now create a book or fetch a book by doing getBook(String id) on the ledger.
+You can register a book or upddate an existing one using registerBook()
+SimpleLedger now works and passes all tests.
+HibernateLedger has been implemented, but there are a few things that dont work yet.
+
 Revision 1.3  2004/03/31 23:11:30  pelle
 Reworked the ID's of the transactions. The primary ID is now the request ID.
 Receipt ID's are optional and added using a separate set method.
@@ -54,7 +61,7 @@ public class HibernateBookBrowser extends BookBrowser {
             return false;
         HTransactionItem item = (HTransactionItem) iter.next();
         final HTransaction tran = item.getTransaction();
-        String counterparty = null;
+        HBook counterparty = null;
         Iterator iter = tran.getItems().iterator();
         while (iter.hasNext()) {
             HTransactionItem party = (HTransactionItem) iter.next();

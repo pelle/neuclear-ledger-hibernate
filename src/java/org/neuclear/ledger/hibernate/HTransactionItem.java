@@ -8,7 +8,7 @@ package org.neuclear.ledger.hibernate;
  * To change this template use File | Settings | File Templates.
  */
 public class HTransactionItem {
-    public HTransactionItem(HTransaction tran, String book, double amount) {
+    public HTransactionItem(HTransaction tran, HBook book, double amount) {
         this.book = book;
         this.amount = amount;
         this.transaction = tran;
@@ -26,11 +26,11 @@ public class HTransactionItem {
         this.id = id;
     }
 
-    public String getBook() {
+    public HBook getBook() {
         return book;
     }
 
-    public void setBook(String book) {
+    public void setBook(HBook book) {
         this.book = book;
     }
 
@@ -63,6 +63,6 @@ public class HTransactionItem {
     private String id;
 //    private String transactionId;
     private HTransaction transaction;
-    private String book;
+    private HBook book;
     private double amount;
 }

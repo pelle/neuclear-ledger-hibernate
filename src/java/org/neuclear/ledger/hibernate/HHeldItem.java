@@ -1,5 +1,6 @@
 package org.neuclear.ledger.hibernate;
 
+
 /**
  * Created by IntelliJ IDEA.
  * User: pelleb
@@ -8,7 +9,7 @@ package org.neuclear.ledger.hibernate;
  * To change this template use File | Settings | File Templates.
  */
 public class HHeldItem {
-    public HHeldItem(HHeld held, String book, double amount) {
+    public HHeldItem(HHeld held, HBook book, double amount) {
         this.book = book;
         this.amount = amount;
         this.held = held;
@@ -26,11 +27,11 @@ public class HHeldItem {
         this.id = id;
     }
 
-    public String getBook() {
+    public HBook getBook() {
         return book;
     }
 
-    public void setBook(String book) {
+    public void setBook(HBook book) {
         this.book = book;
     }
 
@@ -61,6 +62,6 @@ public class HHeldItem {
     private String id;
 //    private String heldId;
     private HHeld held;
-    private String book;
+    private HBook book;
     private double amount;
 }

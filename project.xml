@@ -2,7 +2,7 @@
 <project>
     <name>NeuClear Ledger Hibernate Implementation</name>
     <id>neuclear-ledger-hibernate</id>
-    <currentVersion>0.5.5</currentVersion>
+    <currentVersion>0.6</currentVersion>
     <inceptionYear>2003</inceptionYear>
     <package>org.neuclear.ledger.hibernate</package>
     <logo>/images/logo.gif</logo>
@@ -61,7 +61,7 @@
     <dependencies>
         <dependency>
             <id>neuclear-ledger</id>
-            <version>0.5.5</version>
+            <version>0.6</version>
         </dependency>
 
         <dependency>
@@ -141,6 +141,15 @@
         <dependency>
             <id>commons-logging</id>
             <version>1.0.3</version>
+        </dependency>
+        <dependency>
+            <id>bouncycastle</id>
+            <name>bouncycastle</name>
+            <version>120</version>
+            <jar>bcprov-jdk14-120.jar</jar>
+            <properties>
+                <war.bundle>true</war.bundle>
+            </properties>
         </dependency>
 
         <!--

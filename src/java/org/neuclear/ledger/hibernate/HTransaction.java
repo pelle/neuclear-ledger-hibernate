@@ -47,6 +47,21 @@ public class HTransaction {
         }
     }
 
+    public HTransaction(final PostedHeldTransaction held, final HBook origbook, final HBook newbook, final Date transactionTime, final double amount) throws ExceededHeldAmountException, UnBalancedTransactionException {
+        this.ledger = held.getLedger();
+        this.id = held.getRequestId();
+        this.transactionTime = transactionTime;
+        this.comment = held.getComment();
+        this.items = new HashSet();
+        Iterator iter = held.getAdjustedItems(origbook, newbook, amount).iterator();
+        while (iter.hasNext()) {
+            TransactionItem item = (TransactionItem) iter.next();
+            final HTransactionItem hitem = new HTransactionItem(this, (HBook) item.getBook(), item.getAmount());
+            items.add(hitem);
+//            ((HBook)item.getBook()).getItems().add(hitem);
+        }
+    }
+
     public String getId() {
         return id;
     }

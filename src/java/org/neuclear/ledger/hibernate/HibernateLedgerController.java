@@ -212,6 +212,31 @@ public class HibernateLedgerController extends LedgerController implements Ledge
         }
     }
 
+    public PostedTransaction performCompleteHold(PostedHeldTransaction hold, Book origbook, Book newbook, double amount, String comment) throws InvalidTransactionException, LowlevelLedgerException, TransactionExpiredException, UnknownTransactionException {
+        try {
+            Session ses = locSes.getSession();
+            net.sf.hibernate.Transaction t = ses.beginTransaction();
+            HHeld posted = (HHeld) ses.get(HHeld.class, hold.getRequestId());
+            if (posted == null) {
+                t.rollback();
+                throw new UnknownTransactionException(this, hold.getRequestId());
+            }
+            final Date time = new Date();
+            if (posted.getExpiryTime().before(time) || posted.isCancelled() || posted.getCompletedId() != null) {
+                throw new TransactionExpiredException(this, hold);
+            }
+            HTransaction htran = new HTransaction(hold, (HBook) origbook, (HBook) newbook, time, amount);
+            htran.setComment(comment);
+            ses.save(htran);
+            posted.setCompletedId(htran.getId());
+            ses.update(htran);
+            t.commit();
+            return htran.createPosted();
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(this, e);
+        }
+    }
+
     /**
      * Searches for a Transaction based on its Transaction ID
      *

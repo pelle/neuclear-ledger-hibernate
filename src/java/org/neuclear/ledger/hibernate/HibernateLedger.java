@@ -327,6 +327,27 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
         }
     }
 
+    public double getTestBalance() throws LowlevelLedgerException {
+        try {
+            Session ses = factory.openSession();
+            Query q = ses.createQuery("select sum(item.amount) from HTransactionItem item");
+            Iterator iter = q.iterate();
+            if (iter.hasNext()) {
+                final Object o = iter.next();
+                if (o != null) {
+                    ses.close();
+                    return ((Double) o).doubleValue();
+                }
+//                throw new LowlevelLedgerException(this,"Query returned more or less than one column");
+            }
+//            throw new LowlevelLedgerException(this,"Query didnt return a row");
+            ses.close();
+            return 1; //if we have to return something here there has been an error and we better flag it.
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        }
+    }
+
     public void close() throws LowlevelLedgerException {
         try {
             factory.close();

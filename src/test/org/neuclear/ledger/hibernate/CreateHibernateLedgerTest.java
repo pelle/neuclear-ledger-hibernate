@@ -24,7 +24,7 @@ public class CreateHibernateLedgerTest extends TestCase {
         PostedTransaction tran = ledger.transfer("bob", "alice", 85, "hello");
         assertNotNull(tran);
 
-        assertEquals(pre - 85, ledger.getBalance(null, "bob"), 0);
+        assertEquals(pre - 85, ledger.getBalance("test", "bob"), 0);
 //        ledger.close();
     }
 }

@@ -89,7 +89,7 @@ public final class HibernateLedgerController extends LedgerController implements
             // First lets check the balances
             while (iter.hasNext()) {
                 TransactionItem item = (TransactionItem) iter.next();
-                if (item.getAmount() < 0 && getAvailableBalance(null, item.getBook().getId()) + item.getAmount() < 0)
+                if (item.getAmount() < 0 && getAvailableBalance(trans.getLedger(), item.getBook().getId()) + item.getAmount() < 0)
                     throw new InsufficientFundsException(null, item.getBook().getId(), item.getAmount());
             }
 
@@ -119,7 +119,7 @@ public final class HibernateLedgerController extends LedgerController implements
             // First lets check the balances
             while (iter.hasNext()) {
                 TransactionItem item = (TransactionItem) iter.next();
-                if (item.getAmount() < 0 && getAvailableBalance(null, item.getBook().getId()) + item.getAmount() < 0)
+                if (item.getAmount() < 0 && getAvailableBalance(trans.getLedger(), item.getBook().getId()) + item.getAmount() < 0)
                     throw new InsufficientFundsException(null, item.getBook().getId(), item.getAmount());
             }
 
@@ -271,10 +271,10 @@ public final class HibernateLedgerController extends LedgerController implements
     private double getHeldBalance(String ledger, String book) throws LowlevelLedgerException {
         try {
             Session ses = locSes.getSession();
-            Query q = ses.createQuery("select sum(item.amount) from HHeldItem item where item.book.id = ? and item.transaction.ledger=?  and item.amount<0 and item.held.expiryTime > ? and item.held.cancelled=false and item.held.completedId is null and item.held.receipt is not null");
+            Query q = ses.createQuery("select sum(item.amount) from HHeldItem item where item.book.id = ? and item.held.ledger=?  and item.amount<0 and item.held.expiryTime > ? and item.held.cancelled=false and item.held.completedId is null and item.held.receipt is not null");
             q.setString(0, book);
             q.setString(1, ledger);
-            q.setTimestamp(1, new Date());
+            q.setTimestamp(2, new Date());
             Iterator iter = q.iterate();
             if (iter.hasNext()) {
                 final Object o = iter.next();
@@ -526,40 +526,45 @@ public final class HibernateLedgerController extends LedgerController implements
     }
 
     public BookBrowser browse(String book) throws LowlevelLedgerException {
+        return browse(getId(), book);
+    }
+
+    public BookBrowser browse(String ledger, String book) throws LowlevelLedgerException {
         try {
             Session ses = locSes.getSession();
-            Query q = ses.createQuery("from HTransactionItem item where item.book.id=?");
+            Query q = ses.createQuery("from HTransactionItem item where item.book.id=? and item.transaction.ledger=?");
             q.setString(0, book);
+            q.setString(1, ledger);
             Iterator iter = q.iterate();
             return new HibernateBookBrowser(iter, book);
         } catch (HibernateException e) {
             throw new LowlevelLedgerException(e);
         }
-
     }
 
-    public BookBrowser browseFrom(String book, Date from) throws LowlevelLedgerException {
+    public BookBrowser browseFrom(String ledger, String book, Date from) throws LowlevelLedgerException {
         try {
             Session ses = locSes.getSession();
-            Query q = ses.createQuery("from HTransactionItem item where item.book.id=? and item.transaction.transactionTime>=?");
+            Query q = ses.createQuery("from HTransactionItem item where item.book.id=? and item.transaction.transactionTime>=? and item.transaction.ledger=?");
             q.setString(0, book);
             q.setTimestamp(1, from);
+            q.setString(2, ledger);
             System.out.println("from: " + from);
             Iterator iter = q.iterate();
             return new HibernateBookBrowser(iter, book);
         } catch (HibernateException e) {
             throw new LowlevelLedgerException(e);
         }
-
     }
 
-    public BookBrowser browseRange(String book, Date from, Date until) throws LowlevelLedgerException {
+    public BookBrowser browseRange(String ledger, String book, Date from, Date until) throws LowlevelLedgerException {
         try {
             Session ses = locSes.getSession();
-            Query q = ses.createQuery("from HTransactionItem item where item.book.id=? and item.transaction.transactionTime>=? and item.transaction.transactionTime<?");
+            Query q = ses.createQuery("from HTransactionItem item where item.book.id=? and item.transaction.transactionTime>=? and item.transaction.transactionTime<? and item.transaction.ledger=?");
             q.setString(0, book);
             q.setTimestamp(1, from);
             q.setTimestamp(2, until);
+            q.setString(3, ledger);
             System.out.println("from: " + from);
             System.out.println("until: " + until);
             System.out.println("range of " + (until.getTime() - from.getTime()));
@@ -569,6 +574,14 @@ public final class HibernateLedgerController extends LedgerController implements
             throw new LowlevelLedgerException(e);
         }
 
+    }
+
+    public BookBrowser browseFrom(String book, Date from) throws LowlevelLedgerException {
+        return browseFrom(getId(), book, from);
+    }
+
+    public BookBrowser browseRange(String book, Date from, Date until) throws LowlevelLedgerException {
+        return browseFrom(getId(), book, until);
     }
 
     private final ThreadLocalSession locSes;

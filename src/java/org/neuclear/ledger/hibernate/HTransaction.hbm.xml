@@ -20,7 +20,7 @@
             <column name="receipt" sql-type="char(32)"/>
         </property>
         <property name="transactionTime" type="timestamp">
-            <column name="transactiontime"
+            <column name="transactiontime" sql-type="timestamp(14)"
                 not-null="true"/>
         </property>
         <property name="comment" type="string">

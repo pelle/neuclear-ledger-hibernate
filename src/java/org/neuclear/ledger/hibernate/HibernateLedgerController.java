@@ -7,6 +7,7 @@
 package org.neuclear.ledger.hibernate;
 
 import net.sf.hibernate.HibernateException;
+import net.sf.hibernate.MappingException;
 import net.sf.hibernate.Query;
 import net.sf.hibernate.Session;
 import net.sf.hibernate.cfg.Configuration;
@@ -26,7 +27,7 @@ import java.util.Iterator;
  *         To change the template for this generated type comment go to
  *         Window>Preferences>Java>Code Generation>Code and Comments
  */
-public final class HibernateLedgerController extends LedgerController implements LedgerBrowser {
+public class HibernateLedgerController extends LedgerController implements LedgerBrowser {
 
     public HibernateLedgerController(final String id) throws LowlevelLedgerException {
         this(id, false);
@@ -40,18 +41,22 @@ public final class HibernateLedgerController extends LedgerController implements
         super(id);
 
         try {
-            Configuration cfg = new Configuration()
-                    .addClass(HBook.class)
-                    .addClass(HTransaction.class)
-                    .addClass(HTransactionItem.class)
-                    .addClass(HHeld.class)
-                    .addClass(HHeldItem.class)
-                    .addClass(HLedger.class);
+            Configuration cfg = getConfiguration();
             new net.sf.hibernate.tool.hbm2ddl.SchemaExport(cfg).create(create, create);
             locSes = new ThreadLocalSession(cfg.buildSessionFactory());
         } catch (HibernateException e) {
             throw new LowlevelLedgerException(e);
         }
+    }
+
+    protected Configuration getConfiguration() throws MappingException {
+        return new Configuration()
+                .addClass(HBook.class)
+                .addClass(HTransaction.class)
+                .addClass(HTransactionItem.class)
+                .addClass(HHeld.class)
+                .addClass(HHeldItem.class)
+                .addClass(HLedger.class);
     }
 
     /**

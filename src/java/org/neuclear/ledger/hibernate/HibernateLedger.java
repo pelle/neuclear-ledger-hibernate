@@ -385,7 +385,8 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
             Session ses = factory.openSession();
             Query q = ses.createQuery("from HTransactionItem item where item.book=? and item.transaction.transactionTime>=?");
             q.setString(0, book);
-            q.setDate(1, from);
+            q.setTimestamp(1, from);
+            System.out.println("from: " + from);
             Iterator iter = q.iterate();
             return new HibernateBookBrowser(iter, book);
         } catch (HibernateException e) {
@@ -399,8 +400,11 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
             Session ses = factory.openSession();
             Query q = ses.createQuery("from HTransactionItem item where item.book=? and item.transaction.transactionTime>=? and item.transaction.transactionTime<?");
             q.setString(0, book);
-            q.setDate(1, from);
-            q.setDate(1, until);
+            q.setTimestamp(1, from);
+            q.setTimestamp(2, until);
+            System.out.println("from: " + from);
+            System.out.println("until: " + until);
+            System.out.println("range of " + (until.getTime() - from.getTime()));
             Iterator iter = q.iterate();
             return new HibernateBookBrowser(iter, book);
         } catch (HibernateException e) {

@@ -81,7 +81,7 @@ public class HTransaction {
     }
 
     public PostedTransaction createPosted() throws InvalidTransactionException {
-        UnPostedTransaction unp = new UnPostedTransaction(id, requestId, comment);
+        UnPostedTransaction unp = new UnPostedTransaction(requestId, id, comment);
         Iterator iter = items.iterator();
         while (iter.hasNext()) {
             HTransactionItem item = (HTransactionItem) iter.next();

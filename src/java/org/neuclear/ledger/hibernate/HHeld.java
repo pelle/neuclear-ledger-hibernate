@@ -25,6 +25,8 @@ public class HHeld {
         this.transactionTime = transactionTime;
         this.expiryTime = tran.getExpiryTime();
         this.comment = tran.getComment();
+        this.cancelled = false;
+        this.completed = null;
         final List ol = tran.getItemList();
         this.items = new HashSet(ol.size());
         for (int i = 0; i < ol.size(); i++) {
@@ -81,8 +83,24 @@ public class HHeld {
         this.items = items;
     }
 
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    public void setCancelled(boolean cancelled) {
+        this.cancelled = cancelled;
+    }
+
+    public HTransaction getCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(HTransaction transaction) {
+        this.completed = transaction;
+    }
+
     public PostedHeldTransaction createPosted() throws InvalidTransactionException {
-        UnPostedHeldTransaction unp = new UnPostedHeldTransaction(id, requestId, comment, expiryTime);
+        UnPostedHeldTransaction unp = new UnPostedHeldTransaction(requestId, id, comment, expiryTime);
         Iterator iter = items.iterator();
         while (iter.hasNext()) {
             HHeldItem item = (HHeldItem) iter.next();
@@ -97,4 +115,6 @@ public class HHeld {
     private Date expiryTime;
     private String comment;
     private Set items;
+    private boolean cancelled;
+    private HTransaction completed;
 }

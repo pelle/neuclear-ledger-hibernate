@@ -25,6 +25,11 @@
             <column name="expirytime"
                 not-null="true"/>
         </property>
+        <property name="cancelled" type="boolean">
+            <column name="cancelled"
+                not-null="true"/>
+        </property>
+        <one-to-one name="completed" class="org.neuclear.ledger.hibernate.HTransaction" cascade="none" foreign-key="completed_id"/>
         <property name="comment">
             <column name="comment" sql-type="varchar(255)"
                 not-null="true"/>

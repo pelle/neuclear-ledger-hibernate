@@ -114,6 +114,14 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
         try {
             Session ses = factory.openSession();
             net.sf.hibernate.Transaction t = ses.beginTransaction();
+            Iterator iter = trans.getItems();
+            // First lets check the balances
+            while (iter.hasNext()) {
+                TransactionItem item = (TransactionItem) iter.next();
+                if (item.getAmount() < 0 && getAvailableBalance(item.getBook()) + item.getAmount() < 0)
+                    throw new InsufficientFundsException(null, item.getBook(), item.getAmount());
+            }
+
             HHeld posted = new HHeld(trans, new Date());
             ses.save(posted);
             t.commit();
@@ -134,7 +142,7 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
      * @throws org.neuclear.ledger.UnknownTransactionException
      *
      */
-    public void performCancelHold(PostedHeldTransaction hold) throws LowlevelLedgerException, UnknownTransactionException {
+    public Date performCancelHold(PostedHeldTransaction hold) throws LowlevelLedgerException, UnknownTransactionException {
         try {
             Session ses = factory.openSession();
             net.sf.hibernate.Transaction t = ses.beginTransaction();
@@ -144,13 +152,14 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
                 posted.setCancelled(true);
                 ses.saveOrUpdate(posted);
                 t.commit();
+                ses.close();
+                return new Date();
             } else {
                 t.rollback();
                 ses.close();
                 throw new UnknownTransactionException(this, hold.getRequestId());
             }
 
-            ses.close();
         } catch (HibernateException e) {
             throw new LowlevelLedgerException(e);
         }
@@ -206,7 +215,7 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
      * @param id A valid ID
      * @return The Transaction object
      */
-    public Date getTransactionTime(String id) throws LowlevelLedgerException, UnknownTransactionException, InvalidTransactionException, UnknownBookException {
+    public Date getTransactionTime(String id) throws LowlevelLedgerException, UnknownTransactionException {
         try {
             Session ses = factory.openSession();
             Query q = ses.createQuery("select transactionTime from HTransaction item where item.id = ?");
@@ -251,7 +260,7 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
     public double getBalance(String book) throws LowlevelLedgerException {
         try {
             Session ses = factory.openSession();
-            Query q = ses.createQuery("select sum(item.amount) from HTransactionItem item where item.book = ?");
+            Query q = ses.createQuery("select sum(item.amount) from HTransactionItem item where item.book = ? and item.transaction.receipt is not null");
             q.setString(0, book);
             Iterator iter = q.iterate();
             if (iter.hasNext()) {
@@ -273,7 +282,7 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
     private double getHeldBalance(String book) throws LowlevelLedgerException {
         try {
             Session ses = factory.openSession();
-            Query q = ses.createQuery("select sum(item.amount) from HHeldItem item where item.book = ? and item.amount<0 and item.held.expiryTime > ? and item.held.cancelled=false and item.held.completedId is null");
+            Query q = ses.createQuery("select sum(item.amount) from HHeldItem item where item.book = ? and item.amount<0 and item.held.expiryTime > ? and item.held.cancelled=false and item.held.completedId is null and item.held.receipt is not null");
             q.setString(0, book);
             q.setTimestamp(1, new Date());
             Iterator iter = q.iterate();
@@ -315,6 +324,34 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
         return getHeldBalance(book) + getBalance(book);
     }
 
+    public boolean transactionExists(String id) throws LowlevelLedgerException {
+        try {
+            Session ses = factory.openSession();
+            Query q = ses.createQuery("select item.id from HTransaction item where item.id = ?");
+            q.setString(0, id);
+            Iterator iter = q.iterate();
+            final boolean answer = (iter.hasNext());
+            ses.close();
+            return answer;
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        }
+    }
+
+    public boolean heldTransactionExists(String id) throws LowlevelLedgerException {
+        try {
+            Session ses = factory.openSession();
+            Query q = ses.createQuery("select item.id from HHeld item where item.id = ?");
+            q.setString(0, id);
+            Iterator iter = q.iterate();
+            final boolean answer = (iter.hasNext());
+            ses.close();
+            return answer;
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        }
+    }
+
     /**
      * Searches for a Held Transaction based on its Transaction ID
      *
@@ -353,6 +390,25 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
         } catch (HibernateException e) {
             throw new LowlevelLedgerException(e);
         }
+
+    }
+
+    public void setHeldReceiptId(String id, String receipt) throws LowlevelLedgerException, UnknownTransactionException {
+        try {
+            Session ses = factory.openSession();
+            net.sf.hibernate.Transaction t = ses.beginTransaction();
+            HHeld tran = (HHeld) ses.get(HHeld.class, id);
+            if (tran == null) {
+                ses.close();
+                throw new UnknownTransactionException(this, id);
+            }
+            tran.setReceipt(receipt);
+            t.commit();
+            ses.close();
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        }
+
 
     }
 

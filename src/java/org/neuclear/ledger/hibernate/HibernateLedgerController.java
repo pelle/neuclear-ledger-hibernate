@@ -615,6 +615,38 @@ public final class HibernateLedgerController extends LedgerController implements
         }
     }
 
+    public BookBrowser browseInteractions(String ledger, String book, String counterparty) throws LowlevelLedgerException {
+        try {
+            Session ses = locSes.getSession();
+            Query q = ses.createQuery("select item from HTransactionItem item, HTransactionItem counter where item.book.id=? and item.transaction.ledger=? and counter.book.id=? and item.transaction.receipt=counter.transaction.receipt");
+            q.setString(0, book);
+            q.setString(1, ledger);
+            q.setString(2, counterparty);
+            Iterator iter = q.iterate();
+            return new HibernateBookBrowser(iter, book);
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        }
+    }
+
+    public BookBrowser browseInteractions(String book, String counterparty) throws LowlevelLedgerException {
+        return browseInteractions(getId(), book, counterparty);
+    }
+
+    public PortfolioBrowser browsePortfolioInteractions(Book book, Book counterparty) throws LowlevelLedgerException {
+        try {
+            Session ses = locSes.getSession();
+            Query q = ses.createQuery("select item.transaction.ledger,count(item.id),sum(item.amount) from HTransactionItem item, HTransactionItem counter where item.book.id=? and counter.book.id=? and item.transaction.receipt=counter.transaction.receipt group by item.transaction.ledger");
+            q.setString(0, book.getId());
+            q.setString(1, counterparty.getId());
+            Iterator iter = q.iterate();
+            return new HibernatePortfolioBrowser(iter, book);
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        }
+    }
+
+
     private final ThreadLocalSession locSes;
 
 }

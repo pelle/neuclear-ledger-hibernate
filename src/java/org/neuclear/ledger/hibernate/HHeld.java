@@ -26,7 +26,7 @@ public class HHeld {
         this.expiryTime = tran.getExpiryTime();
         this.comment = tran.getComment();
         this.cancelled = false;
-        this.completed = null;
+        this.completedId = null;
         final List ol = tran.getItemList();
         this.items = new HashSet(ol.size());
         for (int i = 0; i < ol.size(); i++) {
@@ -91,12 +91,12 @@ public class HHeld {
         this.cancelled = cancelled;
     }
 
-    public HTransaction getCompleted() {
-        return completed;
+    public String getCompletedId() {
+        return completedId;
     }
 
-    public void setCompleted(HTransaction transaction) {
-        this.completed = transaction;
+    public void setCompletedId(String completedId) {
+        this.completedId = completedId;
     }
 
     public PostedHeldTransaction createPosted() throws InvalidTransactionException {
@@ -116,5 +116,5 @@ public class HHeld {
     private String comment;
     private Set items;
     private boolean cancelled;
-    private HTransaction completed;
+    private String completedId;
 }

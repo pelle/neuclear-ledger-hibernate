@@ -37,7 +37,12 @@ public class HTransaction {
         this.requestId = held.getRequestId();
         this.transactionTime = transactionTime;
         this.comment = held.getComment();
-        this.items = held.getItems();
+        this.items = new HashSet();
+        Iterator iter = held.getItems().iterator();
+        while (iter.hasNext()) {
+            HHeldItem item = (HHeldItem) iter.next();
+            items.add(new HTransactionItem(this, item.getBook(), item.getAmount()));
+        }
     }
 
     public String getId() {

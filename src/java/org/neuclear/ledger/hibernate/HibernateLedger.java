@@ -183,14 +183,14 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
                 throw new UnknownTransactionException(this, hold.getId());
             }
             final Date time = new Date();
-            if (posted.getExpiryTime().before(time) || posted.isCancelled() || posted.getCompleted() != null) {
+            if (posted.getExpiryTime().before(time) || posted.isCancelled() || posted.getCompletedId() != null) {
                 ses.close();
                 throw new TransactionExpiredException(this, hold);
             }
             HTransaction htran = new HTransaction(posted, time);
             htran.setComment(comment);
             ses.save(htran);
-            posted.setCompleted(htran);
+            posted.setCompletedId(htran.getId());
             ses.update(htran);
             t.commit();
             ses.close();
@@ -273,7 +273,7 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
     private double getHeldBalance(String book) throws LowlevelLedgerException {
         try {
             Session ses = factory.openSession();
-            Query q = ses.createQuery("select sum(item.amount) from HHeldItem item where item.book = ? and item.amount<0 and item.held.expiryTime > ? and item.held.cancelled=false and item.held.completed = null");
+            Query q = ses.createQuery("select sum(item.amount) from HHeldItem item where item.book = ? and item.amount<0 and item.held.expiryTime > ? and item.held.cancelled=false and item.held.completedId is null");
             q.setString(0, book);
             q.setTimestamp(1, new Date());
             Iterator iter = q.iterate();

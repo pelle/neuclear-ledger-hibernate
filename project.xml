@@ -180,24 +180,14 @@
 
     </dependencies>
     <build>
-
-        <!--    <sourceDirectories>-->
         <sourceDirectory>src/java</sourceDirectory>
-        <!--    </sourceDirectories>-->
 
         <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
-        <integrationUnitTestSourceDirectory/>
 
-        <aspectSourceDirectory/>
-
-        <!-- Unit test cases -->
         <unitTest>
             <includes>
                 <include>**/*Test.java</include>
             </includes>
-            <excludes>
-                <exclude>**/LedgerTest.java</exclude>
-            </excludes>
         </unitTest>
 
         <resources>
@@ -205,9 +195,14 @@
                 <directory>
                   src/java
                 </directory>
-                <includes>*.jks</includes>
-                <includes>*.xml</includes>
-                <!--            <targetPath>org/neuclear/commons/crypto/signers</targetPath>-->
+                <includes>
+                    <include>*.jks</include>
+                    <include>*.xml</include>
+                    <include>*.properties</include>
+                </includes>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
             </resource>
         </resources>
 

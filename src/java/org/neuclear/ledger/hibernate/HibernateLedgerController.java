@@ -252,8 +252,9 @@ public final class HibernateLedgerController extends LedgerController implements
     public double getBalance(String ledger, String book) throws LowlevelLedgerException {
         try {
             Session ses = locSes.getSession();
-            Query q = ses.createQuery("select sum(item.amount) from HTransactionItem item where item.book.id = ? and item.transaction.receipt is not null");
+            Query q = ses.createQuery("select sum(item.amount) from HTransactionItem item where item.book.id = ? and item.transaction.ledger=? and item.transaction.receipt is not null");
             q.setString(0, book);
+            q.setString(1, ledger);
             Iterator iter = q.iterate();
             if (iter.hasNext()) {
                 final Object o = iter.next();
@@ -267,11 +268,12 @@ public final class HibernateLedgerController extends LedgerController implements
         }
     }
 
-    private double getHeldBalance(String book) throws LowlevelLedgerException {
+    private double getHeldBalance(String ledger, String book) throws LowlevelLedgerException {
         try {
             Session ses = locSes.getSession();
-            Query q = ses.createQuery("select sum(item.amount) from HHeldItem item where item.book.id = ? and item.amount<0 and item.held.expiryTime > ? and item.held.cancelled=false and item.held.completedId is null and item.held.receipt is not null");
+            Query q = ses.createQuery("select sum(item.amount) from HHeldItem item where item.book.id = ? and item.transaction.ledger=?  and item.amount<0 and item.held.expiryTime > ? and item.held.cancelled=false and item.held.completedId is null and item.held.receipt is not null");
             q.setString(0, book);
+            q.setString(1, ledger);
             q.setTimestamp(1, new Date());
             Iterator iter = q.iterate();
             if (iter.hasNext()) {
@@ -307,7 +309,7 @@ public final class HibernateLedgerController extends LedgerController implements
      */
 
     public double getAvailableBalance(String ledger, String book) throws LowlevelLedgerException {
-        return getHeldBalance(book) + getBalance(null, book);
+        return getHeldBalance(ledger, book) + getBalance(ledger, book);
     }
 
     public long getBookCount(String ledger) throws LowlevelLedgerException {
@@ -330,7 +332,8 @@ public final class HibernateLedgerController extends LedgerController implements
     public long getTransactionCount(String ledger) throws LowlevelLedgerException {
         try {
             Session ses = locSes.getSession();
-            Query q = ses.createQuery("select count(transactions) from HTransaction transactions");
+            Query q = ses.createQuery("select count(transactions) from HTransaction transactions where transactions.ledger=?");
+            q.setString(0, ledger);
             Iterator iter = q.iterate();
             if (iter.hasNext()) {
                 final Object o = iter.next();

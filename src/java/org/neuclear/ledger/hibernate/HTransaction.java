@@ -17,6 +17,7 @@ public class HTransaction {
     }
 
     public HTransaction(UnPostedTransaction unp, Date transactionTime) {
+        this.ledger = unp.getLedger();
         this.id = unp.getRequestId();
         this.transactionTime = transactionTime;
         this.comment = unp.getComment();
@@ -32,6 +33,7 @@ public class HTransaction {
     }
 
     public HTransaction(final PostedHeldTransaction held, final Date transactionTime, final double amount) throws ExceededHeldAmountException, UnBalancedTransactionException {
+        this.ledger = held.getLedger();
         this.id = held.getRequestId();
         this.transactionTime = transactionTime;
         this.comment = held.getComment();
@@ -85,8 +87,16 @@ public class HTransaction {
         this.items = items;
     }
 
+    public String getLedger() {
+        return ledger;
+    }
+
+    public void setLedger(String ledger) {
+        this.ledger = ledger;
+    }
+
     public PostedTransaction createPosted() throws InvalidTransactionException {
-        UnPostedTransaction unp = new UnPostedTransaction(null, id, comment);
+        UnPostedTransaction unp = new UnPostedTransaction(ledger, id, comment);
         Iterator iter = items.iterator();
         while (iter.hasNext()) {
             HTransactionItem item = (HTransactionItem) iter.next();
@@ -97,6 +107,7 @@ public class HTransaction {
         return tran;
     }
 
+    private String ledger;
     private String id;
     private String receipt;
     private Date transactionTime;

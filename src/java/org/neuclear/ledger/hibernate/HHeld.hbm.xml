@@ -13,6 +13,9 @@
                 not-null="true"/>
             <generator class="assigned"/>
         </id>
+        <property name="ledger" type="string">
+            <column name="ledger" sql-type="char(32)"/>
+        </property>
         <property name="receipt">
             <column name="receipt" sql-type="char(32)"/>
         </property>

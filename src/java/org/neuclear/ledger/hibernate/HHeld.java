@@ -20,6 +20,7 @@ public class HHeld {
     }
 
     public HHeld(UnPostedHeldTransaction tran, Date transactionTime) {
+        this.ledger = tran.getLedger();
         this.id = tran.getRequestId();
         this.transactionTime = transactionTime;
         this.expiryTime = tran.getExpiryTime();
@@ -98,8 +99,16 @@ public class HHeld {
         this.completedId = completedId;
     }
 
+    public String getLedger() {
+        return ledger;
+    }
+
+    public void setLedger(String ledger) {
+        this.ledger = ledger;
+    }
+
     public PostedHeldTransaction createPosted() throws InvalidTransactionException {
-        UnPostedHeldTransaction unp = new UnPostedHeldTransaction(null, id, comment, expiryTime);
+        UnPostedHeldTransaction unp = new UnPostedHeldTransaction(ledger, id, comment, expiryTime);
         Iterator iter = items.iterator();
         while (iter.hasNext()) {
             HHeldItem item = (HHeldItem) iter.next();
@@ -112,6 +121,7 @@ public class HHeld {
 
     }
 
+    private String ledger;
     private String id;
     private String receipt;
     private Date transactionTime;

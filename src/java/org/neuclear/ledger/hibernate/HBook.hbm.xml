@@ -21,7 +21,7 @@
         </property>
 
         <property name="source" type="string">
-            <column name="source" sql-type="char(32)"/>
+            <column name="source" sql-type="varchar(100)"/>
         </property>
         <property name="registrationId" type="string">
             <column name="regid" sql-type="char(32)"/>

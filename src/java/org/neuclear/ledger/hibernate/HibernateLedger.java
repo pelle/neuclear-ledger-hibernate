@@ -325,6 +325,49 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
         return getHeldBalance(book) + getBalance(book);
     }
 
+    public long getBookCount() throws LowlevelLedgerException {
+        try {
+            Session ses = factory.openSession();
+            Query q = ses.createQuery("select count(books) from HBook books");
+            Iterator iter = q.iterate();
+            if (iter.hasNext()) {
+                final Object o = iter.next();
+                if (o != null) {
+                    ses.close();
+                    return ((Integer) o).longValue();
+                }
+//                throw new LowlevelLedgerException(this,"Query returned more or less than one column");
+            }
+//            throw new LowlevelLedgerException(this,"Query didnt return a row");
+            ses.close();
+            return 0;
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        }
+    }
+
+    public long getTransactionCount() throws LowlevelLedgerException {
+        try {
+            Session ses = factory.openSession();
+            Query q = ses.createQuery("select count(transactions) from HTransaction transactions");
+            Iterator iter = q.iterate();
+            if (iter.hasNext()) {
+                final Object o = iter.next();
+                if (o != null) {
+                    ses.close();
+                    return ((Integer) o).longValue();
+                }
+//                throw new LowlevelLedgerException(this,"Query returned more or less than one column");
+            }
+//            throw new LowlevelLedgerException(this,"Query didnt return a row");
+            ses.close();
+            return 0;
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        }
+    }
+
+
     public boolean transactionExists(String id) throws LowlevelLedgerException {
         try {
             Session ses = factory.openSession();

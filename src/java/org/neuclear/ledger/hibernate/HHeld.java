@@ -20,8 +20,7 @@ public class HHeld {
     }
 
     public HHeld(UnPostedHeldTransaction tran, Date transactionTime) {
-        this.id = tran.getId();
-        this.requestId = tran.getRequestId();
+        this.id = tran.getRequestId();
         this.transactionTime = transactionTime;
         this.expiryTime = tran.getExpiryTime();
         this.comment = tran.getComment();
@@ -43,12 +42,12 @@ public class HHeld {
         this.id = id;
     }
 
-    public String getRequestId() {
-        return requestId;
+    public String getReceipt() {
+        return receipt;
     }
 
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
+    public void setReceipt(String receipt) {
+        this.receipt = receipt;
     }
 
     public Date getTransactionTime() {
@@ -100,7 +99,7 @@ public class HHeld {
     }
 
     public PostedHeldTransaction createPosted() throws InvalidTransactionException {
-        UnPostedHeldTransaction unp = new UnPostedHeldTransaction(requestId, id, comment, expiryTime);
+        UnPostedHeldTransaction unp = new UnPostedHeldTransaction(id, comment, expiryTime);
         Iterator iter = items.iterator();
         while (iter.hasNext()) {
             HHeldItem item = (HHeldItem) iter.next();
@@ -110,7 +109,7 @@ public class HHeld {
     }
 
     private String id;
-    private String requestId;
+    private String receipt;
     private Date transactionTime;
     private Date expiryTime;
     private String comment;

@@ -12,7 +12,7 @@ public class HHeldItem {
         this.book = book;
         this.amount = amount;
         this.held = held;
-//        this.heldId=held.getId();
+//        this.heldId=held.getRequestId();
     }
 
     public HHeldItem() {

@@ -56,7 +56,7 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
      */
     public PostedTransaction performTransaction(UnPostedTransaction trans) throws UnBalancedTransactionException, LowlevelLedgerException, InvalidTransactionException {
         if (!trans.isBalanced())
-            throw new UnBalancedTransactionException(this, trans);
+            throw new UnBalancedTransactionException(this, trans, trans.getBalance());
         try {
             Session ses = factory.openSession();
             net.sf.hibernate.Transaction t = ses.beginTransaction();
@@ -79,7 +79,7 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
      */
     public PostedTransaction performVerifiedTransfer(UnPostedTransaction trans) throws UnBalancedTransactionException, LowlevelLedgerException, InvalidTransactionException {
         if (!trans.isBalanced())
-            throw new UnBalancedTransactionException(this, trans);
+            throw new UnBalancedTransactionException(this, trans, trans.getBalance());
         try {
             Session ses = factory.openSession();
             net.sf.hibernate.Transaction t = ses.beginTransaction();
@@ -110,7 +110,7 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
      */
     public PostedHeldTransaction performHeldTransfer(UnPostedHeldTransaction trans) throws UnBalancedTransactionException, LowlevelLedgerException, InvalidTransactionException {
         if (!trans.isBalanced())
-            throw new UnBalancedTransactionException(this, trans);
+            throw new UnBalancedTransactionException(this, trans, trans.getBalance());
         try {
             Session ses = factory.openSession();
             net.sf.hibernate.Transaction t = ses.beginTransaction();
@@ -138,7 +138,7 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
         try {
             Session ses = factory.openSession();
             net.sf.hibernate.Transaction t = ses.beginTransaction();
-            HHeld posted = (HHeld) ses.get(HHeld.class, hold.getId());
+            HHeld posted = (HHeld) ses.get(HHeld.class, hold.getRequestId());
             if (posted != null) {
 
                 posted.setCancelled(true);
@@ -147,7 +147,7 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
             } else {
                 t.rollback();
                 ses.close();
-                throw new UnknownTransactionException(this, hold.getId());
+                throw new UnknownTransactionException(this, hold.getRequestId());
             }
 
             ses.close();
@@ -176,18 +176,18 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
         try {
             Session ses = factory.openSession();
             net.sf.hibernate.Transaction t = ses.beginTransaction();
-            HHeld posted = (HHeld) ses.get(HHeld.class, hold.getId());
+            HHeld posted = (HHeld) ses.get(HHeld.class, hold.getRequestId());
             if (posted == null) {
                 t.rollback();
                 ses.close();
-                throw new UnknownTransactionException(this, hold.getId());
+                throw new UnknownTransactionException(this, hold.getRequestId());
             }
             final Date time = new Date();
             if (posted.getExpiryTime().before(time) || posted.isCancelled() || posted.getCompletedId() != null) {
                 ses.close();
                 throw new TransactionExpiredException(this, hold);
             }
-            HTransaction htran = new HTransaction(posted, time);
+            HTransaction htran = new HTransaction(hold, time, amount);
             htran.setComment(comment);
             ses.save(htran);
             posted.setCompletedId(htran.getId());
@@ -336,6 +336,24 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
         } catch (InvalidTransactionException e) {
             throw new LowlevelLedgerException(e);
         }
+    }
+
+    public void setReceiptId(String id, String receipt) throws LowlevelLedgerException, UnknownTransactionException {
+        try {
+            Session ses = factory.openSession();
+            net.sf.hibernate.Transaction t = ses.beginTransaction();
+            HTransaction tran = (HTransaction) ses.get(HTransaction.class, id);
+            if (tran == null) {
+                ses.close();
+                throw new UnknownTransactionException(this, id);
+            }
+            tran.setReceipt(receipt);
+            t.commit();
+            ses.close();
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        }
+
     }
 
     public double getTestBalance() throws LowlevelLedgerException {

@@ -23,8 +23,13 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-$Id: HibernateBookBrowser.java,v 1.2 2004/03/26 23:36:50 pelle Exp $
+$Id: HibernateBookBrowser.java,v 1.3 2004/03/31 23:11:30 pelle Exp $
 $Log: HibernateBookBrowser.java,v $
+Revision 1.3  2004/03/31 23:11:30  pelle
+Reworked the ID's of the transactions. The primary ID is now the request ID.
+Receipt ID's are optional and added using a separate set method.
+The various interactive passphrase agents now have shell methods for the new interactive approach.
+
 Revision 1.2  2004/03/26 23:36:50  pelle
 The simple browse(book) now works on hibernate, I have implemented the other two, which currently don not constrain the query correctly.
 
@@ -57,7 +62,7 @@ public class HibernateBookBrowser extends BookBrowser {
                 counterparty = party.getBook();
             }
         }
-        setRow(tran.getId(), tran.getRequestId(), counterparty, tran.getComment(), tran.getTransactionTime(), item.getAmount(), null, null, null);
+        setRow(tran.getId(), counterparty, tran.getComment(), tran.getTransactionTime(), item.getAmount(), null, null, null);
         return true;
     }
 

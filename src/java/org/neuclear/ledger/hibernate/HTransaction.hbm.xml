@@ -13,9 +13,8 @@
                 not-null="true"/>
             <generator class="assigned"/>
         </id>
-        <property name="requestId" type="string">
-            <column name="reqid" sql-type="char(32)"
-                not-null="true"/>
+        <property name="receipt" type="string">
+            <column name="receipt" sql-type="char(32)"/>
         </property>
         <property name="transactionTime" type="timestamp">
             <column name="transactiontime"

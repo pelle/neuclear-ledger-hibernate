@@ -12,7 +12,7 @@ public class HTransactionItem {
         this.book = book;
         this.amount = amount;
         this.transaction = tran;
-//        this.transactionId=tran.getId();
+//        this.transactionId=tran.getRequestId();
     }
 
     public HTransactionItem() {

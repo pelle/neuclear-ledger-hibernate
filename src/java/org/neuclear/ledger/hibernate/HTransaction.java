@@ -1,9 +1,6 @@
 package org.neuclear.ledger.hibernate;
 
-import org.neuclear.ledger.InvalidTransactionException;
-import org.neuclear.ledger.PostedTransaction;
-import org.neuclear.ledger.TransactionItem;
-import org.neuclear.ledger.UnPostedTransaction;
+import org.neuclear.ledger.*;
 
 import java.util.*;
 
@@ -20,8 +17,7 @@ public class HTransaction {
     }
 
     public HTransaction(UnPostedTransaction unp, Date transactionTime) {
-        this.id = unp.getId();
-        this.requestId = unp.getRequestId();
+        this.id = unp.getRequestId();
         this.transactionTime = transactionTime;
         this.comment = unp.getComment();
         final List ol = unp.getItemList();
@@ -32,15 +28,14 @@ public class HTransaction {
         }
     }
 
-    public HTransaction(HHeld held, Date transactionTime) {
-        this.id = held.getId();
-        this.requestId = held.getRequestId();
+    public HTransaction(final PostedHeldTransaction held, final Date transactionTime, final double amount) throws ExceededHeldAmountException, UnBalancedTransactionException {
+        this.id = held.getRequestId();
         this.transactionTime = transactionTime;
         this.comment = held.getComment();
         this.items = new HashSet();
-        Iterator iter = held.getItems().iterator();
+        Iterator iter = held.getAdjustedItems(amount).iterator();
         while (iter.hasNext()) {
-            HHeldItem item = (HHeldItem) iter.next();
+            TransactionItem item = (TransactionItem) iter.next();
             items.add(new HTransactionItem(this, item.getBook(), item.getAmount()));
         }
     }
@@ -53,12 +48,12 @@ public class HTransaction {
         this.id = id;
     }
 
-    public String getRequestId() {
-        return requestId;
+    public String getReceipt() {
+        return receipt;
     }
 
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
+    public void setReceipt(String receipt) {
+        this.receipt = receipt;
     }
 
     public Date getTransactionTime() {
@@ -86,7 +81,7 @@ public class HTransaction {
     }
 
     public PostedTransaction createPosted() throws InvalidTransactionException {
-        UnPostedTransaction unp = new UnPostedTransaction(requestId, id, comment);
+        UnPostedTransaction unp = new UnPostedTransaction(id, comment);
         Iterator iter = items.iterator();
         while (iter.hasNext()) {
             HTransactionItem item = (HTransactionItem) iter.next();
@@ -96,7 +91,7 @@ public class HTransaction {
     }
 
     private String id;
-    private String requestId;
+    private String receipt;
     private Date transactionTime;
     private String comment;
     private Set items;

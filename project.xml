@@ -16,7 +16,7 @@
     Generalised Java API for Ledger like Applications.
     </description>
 
-    <url>http://old.neuclear.org/ledger/hibernate</url>
+    <url>http://dev.neuclear.org/ledger/hibernate</url>
 
     <repository>
         <connection>
@@ -27,7 +27,7 @@
         </url>
     </repository>
 
-    <siteAddress>old.neuclear.org</siteAddress>
+    <siteAddress>dev.neuclear.org</siteAddress>
     <siteDirectory>/home/sites/neuclear.org/public_html/ledger/hibernate/</siteDirectory>
     <issueTrackingUrl>http://jira.neuclear.org</issueTrackingUrl>
     <mailingLists>

@@ -503,13 +503,15 @@ public final class HibernateLedgerController extends LedgerController implements
     public double getTestBalance(String ledger) throws LowlevelLedgerException {
         try {
             Session ses = locSes.getSession();
-            Query q = ses.createQuery("select sum(item.amount) from HTransactionItem item");
+            Query q = ses.createQuery("select sum(item.amount) from HTransactionItem item where item.transaction.ledger=?");
+            q.setString(0, ledger);
             Iterator iter = q.iterate();
             if (iter.hasNext()) {
                 final Object o = iter.next();
                 if (o != null) {
                     return ((Double) o).doubleValue();
                 }
+                return 0; // if o is NULL there are no transactions and it balances
             }
             return 1; //if we have to return something here there has been an error and we better flag it.
         } catch (HibernateException e) {

@@ -67,6 +67,7 @@ public final class HibernateLedgerController extends LedgerController implements
             net.sf.hibernate.Transaction t = ses.beginTransaction();
             HTransaction posted = new HTransaction(trans, new Date());
             ses.save(posted);
+            ses.flush();
             t.commit();
             return posted.createPosted();
         } catch (HibernateException e) {
@@ -563,7 +564,9 @@ public final class HibernateLedgerController extends LedgerController implements
     public BookBrowser browseRange(String ledger, String book, Date from, Date until) throws LowlevelLedgerException {
         try {
             Session ses = locSes.getSession();
-            Query q = ses.createQuery("from HTransactionItem item where item.book.id=? and item.transaction.transactionTime>=? and item.transaction.transactionTime<? and item.transaction.ledger=?");
+            Query q = ses.createQuery("from HTransactionItem item where item.book.id=? and " +
+                    "item.transaction.transactionTime>=? and item.transaction.transactionTime<? and " +
+                    "item.transaction.ledger=?");
             q.setString(0, book);
             q.setTimestamp(1, from);
             q.setTimestamp(2, until);
@@ -584,22 +587,16 @@ public final class HibernateLedgerController extends LedgerController implements
     }
 
     public BookBrowser browseRange(String book, Date from, Date until) throws LowlevelLedgerException {
-        return browseFrom(getId(), book, until);
+        return browseRange(getId(), book, from, until);
     }
 
     public BookListBrowser browseBooks(String ledger) throws LowlevelLedgerException {
         try {
             Session ses = locSes.getSession();
-            Query q = ses.createQuery("select item.book.id,item.book.nickname,item.book.source,sum(item.amount),count(item.id) from HTransactionItem item where item.transaction.ledger=? group by item.book");
-            q.setString(0, book);
-            q.setTimestamp(1, from);
-            q.setTimestamp(2, until);
-            q.setString(3, ledger);
-            System.out.println("from: " + from);
-            System.out.println("until: " + until);
-            System.out.println("range of " + (until.getTime() - from.getTime()));
+            Query q = ses.createQuery("select item.book,count(item.id),sum(item.amount) from HTransactionItem item where item.transaction.ledger=? group by item.book");
+            q.setString(0, ledger);
             Iterator iter = q.iterate();
-            return new HibernateBookBrowser(iter, book);
+            return new HibernateBookListBrowser(iter, ledger);
         } catch (HibernateException e) {
             throw new LowlevelLedgerException(e);
         }

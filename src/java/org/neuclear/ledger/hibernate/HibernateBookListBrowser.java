@@ -20,8 +20,9 @@ package org.neuclear.ledger.hibernate;
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+import org.neuclear.ledger.Book;
 import org.neuclear.ledger.LowlevelLedgerException;
-import org.neuclear.ledger.browser.BookBrowser;
+import org.neuclear.ledger.browser.BookListBrowser;
 
 import java.util.Iterator;
 
@@ -30,33 +31,17 @@ import java.util.Iterator;
  * Date: Mar 25, 2004
  * Time: 10:00:41 PM
  */
-public class HibernateBookListBrowser extends BookBrowser {
-    public HibernateBookListBrowser(Iterator iter, String book) {
-        super(book);
+public class HibernateBookListBrowser extends BookListBrowser {
+    public HibernateBookListBrowser(Iterator iter, String ledger) {
+        super(ledger);
         this.iter = iter;
     }
 
     public boolean next() throws LowlevelLedgerException {
         if (!iter.hasNext())
             return false;
-        HTransactionItem item = (HTransactionItem) iter.next();
-        final HTransaction tran = item.getTransaction();
-        HBook counterparty = null;
-        Iterator iter = tran.getItems().iterator();
-        HBook last = null;
-
-        int count = tran.getItems().size();
-        while (iter.hasNext()) {
-            count--;
-            HTransactionItem party = (HTransactionItem) iter.next();
-            if (!party.getBook().equals(item.getBook())) {
-                counterparty = party.getBook();
-            }
-            last = party.getBook();
-        }
-        if (counterparty == null)//We did a transfer to ourselves
-            counterparty = last;
-        setRow(tran.getId(), counterparty, tran.getComment(), tran.getTransactionTime(), item.getAmount(), null, null, null);
+        Object[] item = (Object[]) iter.next();
+        setRow((Book) item[0], ((Integer) item[1]).intValue(), ((Double) item[2]).doubleValue());
         return true;
     }
 

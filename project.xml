@@ -84,17 +84,27 @@
             <version>3.8.1</version>
         </dependency>
         <dependency>
-            <id>hibernate</id>
-            <name>hibernate</name>
-            <version>2.1.2</version>
-
-        </dependency>
-        <dependency>
             <id>dom4j</id>
             <version>1.4</version>
             <properties>
                 <war.bundle>true</war.bundle>
             </properties>
+        </dependency>
+        <dependency>
+            <id>prevayler</id>
+            <name>prevayler</name>
+            <version>2.0.2.000beta</version>
+            <jar>prevayler2.02.000beta.jar</jar>
+        </dependency>
+        <dependency>
+            <id>trove</id>
+            <name>trove</name>
+            <version>1.0.2</version>
+        </dependency>
+        <dependency>
+            <id>hibernate</id>
+            <name>hibernate</name>
+            <version>2.1.2</version>
         </dependency>
         <dependency>
             <id>odmg</id>
@@ -115,31 +125,19 @@
             <version>2.1</version>
         </dependency>
         <dependency>
-            <id>carol</id>
-            <version>1.5.2</version>
+            <id>mysql</id>
+            <jar>mysql-connector-java-3.0.8-stable-bin.jar</jar>
+        </dependency>
+        <dependency>
+            <id>ehcache</id>
+            <version>0.7</version>
             <properties>
                 <war.bundle>true</war.bundle>
             </properties>
         </dependency>
         <dependency>
-            <groupId>jotm</groupId>
-            <artifactId>jotm</artifactId>
-            <version>1.4.3</version>
-            <properties>
-                <war.bundle>true</war.bundle>
-            </properties>
-        </dependency>
-        <!--        <dependency>
-                    <groupId>jotm</groupId>
-                    <artifactId>jotm_jrmp_stubs</artifactId>
-                    <version>1.4.3</version>
-                    <properties>
-                        <war.bundle>true</war.bundle>
-                    </properties>
-                </dependency>-->
-        <dependency>
-            <id>xapool</id>
-            <version>1.3.1</version>
+            <id>asm</id>
+            <version>1.4</version>
             <properties>
                 <war.bundle>true</war.bundle>
             </properties>
@@ -155,6 +153,41 @@
             <id>commons-logging</id>
             <version>1.0.3</version>
         </dependency>
+
+        <!--
+        <dependency>
+            <id>carol</id>
+            <version>1.5.2</version>
+            <properties>
+                <war.bundle>true</war.bundle>
+            </properties>
+        </dependency>
+        <dependency>
+            <groupId>jotm</groupId>
+            <artifactId>jotm</artifactId>
+            <version>1.4.3</version>
+            <properties>
+                <war.bundle>true</war.bundle>
+            </properties>
+        </dependency>
+        -->
+        <!--        <dependency>
+                    <groupId>jotm</groupId>
+                    <artifactId>jotm_jrmp_stubs</artifactId>
+                    <version>1.4.3</version>
+                    <properties>
+                        <war.bundle>true</war.bundle>
+                    </properties>
+                </dependency>-->
+        <!--
+                <dependency>
+                    <id>xapool</id>
+                    <version>1.3.1</version>
+                    <properties>
+                        <war.bundle>true</war.bundle>
+                    </properties>
+                </dependency>
+                -->
 
     </dependencies>
     <build>

@@ -25,13 +25,13 @@ import java.util.Iterator;
  *         To change the template for this generated type comment go to
  *         Window>Preferences>Java>Code Generation>Code and Comments
  */
-public final class HibernateLedger extends Ledger implements LedgerBrowser {
+public final class HibernateLedgerController extends LedgerController implements LedgerBrowser {
 
-    public HibernateLedger(final String id) throws LowlevelLedgerException {
+    public HibernateLedgerController(final String id) throws LowlevelLedgerException {
         this(id, false);
     }
 
-    public HibernateLedger(final String id, final boolean create) throws LowlevelLedgerException {
+    public HibernateLedgerController(final String id, final boolean create) throws LowlevelLedgerException {
         super(id);
 
         try {

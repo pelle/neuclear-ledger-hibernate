@@ -1,6 +1,6 @@
 package org.neuclear.ledger.hibernate;
 
-import org.neuclear.ledger.Ledger;
+import org.neuclear.ledger.LedgerController;
 import org.neuclear.ledger.LowlevelLedgerException;
 import org.neuclear.ledger.UnknownLedgerException;
 import org.neuclear.ledger.tests.AbstractLedgerTest;
@@ -17,8 +17,8 @@ public final class HibernateLedgerTest extends AbstractLedgerTest {
         super(s);
     }
 
-    public final Ledger createLedger() throws UnknownLedgerException, LowlevelLedgerException {
-        return new HibernateLedger("test", true);
+    public final LedgerController createLedger() throws UnknownLedgerException, LowlevelLedgerException {
+        return new HibernateLedgerController("test", true);
     }
 
 

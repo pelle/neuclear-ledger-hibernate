@@ -73,7 +73,7 @@
         </dependency>
         <dependency>
             <id>neuclear-commons</id>
-            <version>0.6-SNAPSHOT</version>
+            <version>0.6</version>
             <properties>
                 <war.bundle>true</war.bundle>
             </properties>

@@ -6,6 +6,10 @@
  */
 package org.neuclear.ledger.hibernate;
 
+import net.sf.hibernate.HibernateException;
+import net.sf.hibernate.Session;
+import net.sf.hibernate.SessionFactory;
+import net.sf.hibernate.cfg.Configuration;
 import org.neuclear.ledger.*;
 import org.neuclear.ledger.browser.BookBrowser;
 import org.neuclear.ledger.browser.LedgerBrowser;
@@ -23,6 +27,15 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
 
     public HibernateLedger(final String id) throws LowlevelLedgerException, UnknownLedgerException {
         super(id);
+
+        try {
+            Configuration cfg = new Configuration()
+                    .addClass(PostedTransaction.class)
+                    .addClass(PostedHeldTransaction.class);
+            factory = cfg.buildSessionFactory();
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        }
     }
 
     /**
@@ -33,7 +46,19 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
      * @return The reference to the transaction
      */
     public PostedTransaction performTransaction(UnPostedTransaction trans) throws UnBalancedTransactionException, LowlevelLedgerException, InvalidTransactionException {
-        return null;
+        if (!trans.isBalanced())
+            throw new UnBalancedTransactionException(this, trans);
+        try {
+            Session ses = factory.openSession();
+            net.sf.hibernate.Transaction t = ses.beginTransaction();
+            PostedTransaction posted = new PostedTransaction(trans, new Date());
+            ses.saveOrUpdate(posted);
+            t.commit();
+            ses.close();
+            return posted;
+        } catch (HibernateException e) {
+            throw new LowlevelLedgerException(e);
+        }
     }
 
     /**
@@ -173,5 +198,7 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
     public BookBrowser browseRange(String book, Timestamp from, Timestamp until) throws LowlevelLedgerException {
         return null;
     }
+
+    private final SessionFactory factory;
 
 }

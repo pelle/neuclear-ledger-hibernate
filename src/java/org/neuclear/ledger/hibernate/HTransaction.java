@@ -87,7 +87,9 @@ public class HTransaction {
             HTransactionItem item = (HTransactionItem) iter.next();
             unp.addItem(item.getBook(), item.getAmount());
         }
-        return new PostedTransaction(unp, transactionTime);
+        PostedTransaction tran = new PostedTransaction(unp, transactionTime);
+        tran.setReceiptId(receipt);
+        return tran;
     }
 
     private String id;

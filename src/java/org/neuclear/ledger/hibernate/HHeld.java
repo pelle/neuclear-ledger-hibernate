@@ -105,7 +105,11 @@ public class HHeld {
             HHeldItem item = (HHeldItem) iter.next();
             unp.addItem(item.getBook(), item.getAmount());
         }
-        return new PostedHeldTransaction(unp, transactionTime);
+
+        PostedHeldTransaction tran = new PostedHeldTransaction(unp, transactionTime);
+        tran.setReceiptId(receipt);
+        return tran;
+
     }
 
     private String id;

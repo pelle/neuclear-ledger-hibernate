@@ -361,13 +361,15 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
     public PostedHeldTransaction findHeldTransaction(String idstring) throws LowlevelLedgerException, UnknownTransactionException {
         try {
             Session ses = factory.openSession();
-            HHeld held = (HHeld) ses.get(HHeld.class, idstring);
-            if (held == null) {
+            net.sf.hibernate.Transaction t = ses.beginTransaction();
+            HHeld tran = (HHeld) ses.get(HHeld.class, idstring);
+            if (tran == null) {
                 ses.close();
-                return held.createPosted();
+                throw new UnknownTransactionException(this, idstring);
             }
+            PostedHeldTransaction ph = tran.createPosted();
             ses.close();
-            throw new UnknownTransactionException(this, idstring);
+            return ph;
         } catch (HibernateException e) {
             throw new LowlevelLedgerException(e);
         } catch (InvalidTransactionException e) {
@@ -385,6 +387,8 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
                 throw new UnknownTransactionException(this, id);
             }
             tran.setReceipt(receipt);
+            ses.flush();
+//            ses.update(tran);
             t.commit();
             ses.close();
         } catch (HibernateException e) {
@@ -403,6 +407,7 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
                 throw new UnknownTransactionException(this, id);
             }
             tran.setReceipt(receipt);
+            ses.flush();
             t.commit();
             ses.close();
         } catch (HibernateException e) {

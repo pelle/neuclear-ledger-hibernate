@@ -91,17 +91,6 @@
             </properties>
         </dependency>
         <dependency>
-            <id>prevayler</id>
-            <name>prevayler</name>
-            <version>2.0.2.000beta</version>
-            <jar>prevayler2.02.000beta.jar</jar>
-        </dependency>
-        <dependency>
-            <id>trove</id>
-            <name>trove</name>
-            <version>1.0.2</version>
-        </dependency>
-        <dependency>
             <id>hibernate</id>
             <name>hibernate</name>
             <version>2.1.2</version>

@@ -18,10 +18,6 @@
         <!--                    not-null="true"/>-->
         <!--        </property>-->
         <many-to-one name="book"
-            class="org.neuclear.ledger.hibernate.HBook"
-            column="book"
-            update="false"
-            insert="false"
             />
         <property name="amount">
             <column name="amount" sql-type="double"

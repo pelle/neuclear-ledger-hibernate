@@ -35,10 +35,14 @@
             <column name="updated"
                 not-null="true"/>
         </property>
-        <set name="items" table="transaction_items" cascade="all">
-            <key column="book"/>
-            <one-to-many class="org.neuclear.ledger.hibernate.HTransactionItem"/>
-        </set>
+
+        <!--
+                <set name="items" table="transaction_items" inverse="true" cascade="all">
+                    <key column="book_id" />
+                    <one-to-many class="org.neuclear.ledger.hibernate.HTransactionItem"/>
+                </set>
+        -->
+
 
     </class>
 </hibernate-mapping>

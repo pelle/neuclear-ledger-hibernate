@@ -5,8 +5,11 @@ import org.neuclear.ledger.LowlevelLedgerException;
 import org.neuclear.ledger.tests.AbstractLedgerBrowserTest;
 
 /*
-$Id: HibernateBrowserTest.java,v 1.1 2004/03/26 18:38:28 pelle Exp $
+$Id: HibernateBrowserTest.java,v 1.2 2004/04/20 00:16:19 pelle Exp $
 $Log: HibernateBrowserTest.java,v $
+Revision 1.2  2004/04/20 00:16:19  pelle
+Hibernate now works with the book tables
+
 Revision 1.1  2004/03/26 18:38:28  pelle
 More work on browsers. Added an AbstractLedgerBrowserTest for unit testing LedgerBrowsers.
 
@@ -23,6 +26,6 @@ public class HibernateBrowserTest extends AbstractLedgerBrowserTest {
     }
 
     public Ledger getLedger() throws LowlevelLedgerException {
-        return new HibernateLedger("test");
+        return new HibernateLedger("test", true);
     }
 }

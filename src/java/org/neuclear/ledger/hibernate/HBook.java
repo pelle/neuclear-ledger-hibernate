@@ -3,7 +3,6 @@ package org.neuclear.ledger.hibernate;
 import org.neuclear.ledger.Book;
 
 import java.util.Date;
-import java.util.Set;
 
 /*
  *  The NeuClear Project and it's libraries are
@@ -70,6 +69,7 @@ public class HBook extends Book {
     public void setRegistered(Date registered) {
         this.registered = registered;
     }
+/*
 
     public Set getItems() {
         return items;
@@ -80,6 +80,7 @@ public class HBook extends Book {
     }
 
     private Set items;
+*/
 
 
 }

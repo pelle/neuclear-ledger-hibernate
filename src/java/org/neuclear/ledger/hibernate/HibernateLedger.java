@@ -435,7 +435,7 @@ public final class HibernateLedger extends Ledger implements LedgerBrowser {
         try {
             Session ses = factory.openSession();
             net.sf.hibernate.Transaction t = ses.beginTransaction();
-            HTransaction tran = (HTransaction) ses.get(HTransaction.class, id);
+            HTransaction tran = (HTransaction) ses.load(HTransaction.class, id);
             if (tran == null) {
                 ses.close();
                 throw new UnknownTransactionException(this, id);

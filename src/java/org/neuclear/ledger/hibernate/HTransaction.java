@@ -24,8 +24,11 @@ public class HTransaction {
         this.items = new HashSet(ol.size());
         for (int i = 0; i < ol.size(); i++) {
             TransactionItem item = (TransactionItem) ol.get(i);
-            items.add(new HTransactionItem(this, (HBook) item.getBook(), item.getAmount()));
+            final HTransactionItem hitem = new HTransactionItem(this, (HBook) item.getBook(), item.getAmount());
+            items.add(hitem);
+//            ((HBook)item.getBook()).getItems().add(hitem);
         }
+
     }
 
     public HTransaction(final PostedHeldTransaction held, final Date transactionTime, final double amount) throws ExceededHeldAmountException, UnBalancedTransactionException {
@@ -36,7 +39,9 @@ public class HTransaction {
         Iterator iter = held.getAdjustedItems(amount).iterator();
         while (iter.hasNext()) {
             TransactionItem item = (TransactionItem) iter.next();
-            items.add(new HTransactionItem(this, (HBook) item.getBook(), item.getAmount()));
+            final HTransactionItem hitem = new HTransactionItem(this, (HBook) item.getBook(), item.getAmount());
+            items.add(hitem);
+//            ((HBook)item.getBook()).getItems().add(hitem);
         }
     }
 

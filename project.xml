@@ -2,7 +2,7 @@
 <project>
     <name>NeuClear Ledger Hibernate Implementation</name>
     <id>neuclear-ledger-hibernate</id>
-    <currentVersion>0.5-SNAPSHOT</currentVersion>
+    <currentVersion>0.5</currentVersion>
     <inceptionYear>2003</inceptionYear>
     <package>org.neuclear.ledger.hibernate</package>
     <logo>/images/logo.gif</logo>

@@ -23,8 +23,16 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-$Id: HibernateBookBrowser.java,v 1.4 2004/04/19 18:57:38 pelle Exp $
+$Id: HibernateBookBrowser.java,v 1.5 2004/04/21 23:25:57 pelle Exp $
 $Log: HibernateBookBrowser.java,v $
+Revision 1.5  2004/04/21 23:25:57  pelle
+Integrated Browser with the asset controller
+Updated look and feel
+Added ServletLedgerFactory
+Added ServletAssetControllerFactory
+Created issue.jsp file
+Fixed many smaller issues
+
 Revision 1.4  2004/04/19 18:57:38  pelle
 Updated Ledger to support more advanced book information.
 You can now create a book or fetch a book by doing getBook(String id) on the ledger.
@@ -63,9 +71,12 @@ public class HibernateBookBrowser extends BookBrowser {
         final HTransaction tran = item.getTransaction();
         HBook counterparty = null;
         Iterator iter = tran.getItems().iterator();
+
+        int count = tran.getItems().size();
         while (iter.hasNext()) {
+            count--;
             HTransactionItem party = (HTransactionItem) iter.next();
-            if (!party.getBook().equals(item.getBook())) {
+            if (!party.getBook().equals(item.getBook()) || count == 0) {
                 counterparty = party.getBook();
             }
         }
